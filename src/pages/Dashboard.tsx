@@ -6,8 +6,10 @@ import { CreditCardVisual } from '../components/Dashboard/CreditCard';
 import { AnalyticsChart } from '../components/Dashboard/AnalyticsChart';
 import { ActivityList } from '../components/Dashboard/ActivityList';
 import { TransferWidget } from '../components/Dashboard/TransferWidget';
+import { UserInfoWidget } from '../components/Dashboard/UserInfoWidget';
 import { mockApi, type Account } from '../api/mockApi';
 import { Loader2 } from 'lucide-react';
+import { useBankStore } from '../store/useBankStore';
 
 // Animation variants for staggered children
 const containerVariants: Variants = {
@@ -33,6 +35,7 @@ const itemVariants: Variants = {
 export const Dashboard: React.FC = () => {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user, balance } = useBankStore();
 
     const fetchData = async () => {
         try {
@@ -48,8 +51,6 @@ export const Dashboard: React.FC = () => {
     useEffect(() => {
         fetchData();
     }, []);
-
-    const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
     if (loading) {
         return (
@@ -67,40 +68,57 @@ export const Dashboard: React.FC = () => {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 lg:pb-8 max-w-7xl mx-auto px-4 lg:px-8 pt-6"
+                className="max-w-7xl mx-auto px-6 lg:px-8 py-8 space-y-8"
             >
-                {/* Header */}
-                <motion.div variants={itemVariants} className="col-span-1 lg:col-span-3 mb-4">
-                    <h1 className="text-3xl font-extrabold text-black tracking-tight">Dashboard.</h1>
-                    <p className="text-gray-500 text-sm font-medium mt-1">Welcome back, Ibrahim.</p>
-                </motion.div>
-
-                {/* TOP ROW: Balance (2/3) + Credit Card (1/3) */}
-                <motion.div variants={itemVariants} className="lg:col-span-2 min-h-[240px]">
-                    <div className="h-full bg-white border border-pesse-gray rounded-3xl p-1 overflow-hidden shadow-lg shadow-black/5">
-                        {/* Reusing BalanceHero but wrapping it in new Bento style or letting it fill */}
-                        <BalanceHero totalBalance={totalBalance} />
+                {/* Clean Header */}
+                <motion.div variants={itemVariants} className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-4xl font-black text-black tracking-tighter uppercase italic leading-none">NODE DASH.</h1>
+                        <p className="text-gray-400 font-bold mt-2 uppercase text-[10px] tracking-[0.2em] opacity-70">Secured terminal for {user?.firstName}</p>
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="lg:col-span-1 min-h-[240px]">
-                    <CreditCardVisual />
-                </motion.div>
+                {/* ROW 1: Balance & Credit Card */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <motion.div variants={itemVariants} className="lg:col-span-8">
+                        <div className="h-full bg-white border border-gray-100 rounded-[32px] p-2 shadow-sm">
+                            <BalanceHero totalBalance={balance} />
+                        </div>
+                    </motion.div>
 
-                {/* MIDDLE ROW: Analytics Chart (Full Width) */}
-                <motion.div variants={itemVariants} className="lg:col-span-3 min-h-[350px] bg-white border border-pesse-gray rounded-3xl p-8 shadow-lg shadow-black/5">
-                    <AnalyticsChart />
-                </motion.div>
+                    <motion.div variants={itemVariants} className="lg:col-span-4 rounded-[32px] overflow-hidden">
+                        <CreditCardVisual />
+                    </motion.div>
+                </div>
 
-                {/* BOTTOM ROW: Activity List (2/3) + Transfer Widget (1/3) */}
-                <motion.div variants={itemVariants} className="lg:col-span-2">
-                    <ActivityList />
-                </motion.div>
+                {/* ROW 2: Profile, Transfer, Activity */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <motion.div variants={itemVariants}>
+                        <UserInfoWidget />
+                    </motion.div>
 
-                <motion.div variants={itemVariants} className="lg:col-span-1">
-                    <TransferWidget accounts={accounts} onTransferSuccess={fetchData} />
-                </motion.div>
+                    <motion.div variants={itemVariants}>
+                        <TransferWidget accounts={accounts} onTransferSuccess={fetchData} />
+                    </motion.div>
 
+                    <motion.div variants={itemVariants}>
+                        <ActivityList />
+                    </motion.div>
+                </div>
+
+                {/* ROW 3: Analytics - High visibility */}
+                <motion.div
+                    variants={itemVariants}
+                    className="bg-white border border-gray-100 rounded-[32px] p-10 shadow-sm"
+                >
+                    <div className="mb-8">
+                        <h3 className="text-lg font-black text-black tracking-tight uppercase italic">Spending Analytics.</h3>
+                        <p className="text-xs text-gray-400 font-bold">Historical data visualization across all nodes</p>
+                    </div>
+                    <div className="h-[350px] w-full">
+                        <AnalyticsChart />
+                    </div>
+                </motion.div>
             </motion.div>
         </Layout>
     );

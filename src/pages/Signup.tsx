@@ -3,17 +3,33 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/UI/Button';
 import { ArrowLeft, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useBankStore } from '../store/useBankStore';
 
 export const Signup: React.FC = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const login = useBankStore((state) => state.login);
+
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: ''
+    });
 
     const handleSignup = (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
         // Mock signup delay
         setTimeout(() => {
             setIsLoading(false);
+            login({
+                id: Math.random().toString(36).substr(2, 9),
+                firstName: formData.firstName || 'User',
+                lastName: formData.lastName || '',
+                email: formData.email
+            });
             navigate('/dashboard');
         }, 1500);
     };
@@ -124,6 +140,8 @@ export const Signup: React.FC = () => {
                                         type="text"
                                         className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-pesse-lime focus:ring-1 focus:ring-pesse-lime outline-none transition-all bg-gray-50"
                                         placeholder="John"
+                                        value={formData.firstName}
+                                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                         required
                                     />
                                 </div>
@@ -133,6 +151,8 @@ export const Signup: React.FC = () => {
                                         type="text"
                                         className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-pesse-lime focus:ring-1 focus:ring-pesse-lime outline-none transition-all bg-gray-50"
                                         placeholder="Doe"
+                                        value={formData.lastName}
+                                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                         required
                                     />
                                 </div>
@@ -144,6 +164,8 @@ export const Signup: React.FC = () => {
                                     type="email"
                                     className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-pesse-lime focus:ring-1 focus:ring-pesse-lime outline-none transition-all bg-gray-50"
                                     placeholder="name@example.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     required
                                 />
                             </div>
@@ -154,6 +176,8 @@ export const Signup: React.FC = () => {
                                     type="password"
                                     className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-pesse-lime focus:ring-1 focus:ring-pesse-lime outline-none transition-all bg-gray-50"
                                     placeholder="Create a password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     required
                                 />
                             </div>

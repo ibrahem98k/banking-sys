@@ -11,6 +11,7 @@ import { Personal } from './pages/landing/Personal';
 import { Business } from './pages/landing/Business';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
+import { AdminDashboard } from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/cards" element={<Cards />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/admin" element={<AdminDashboard />} />
 
         {/* Landing Pages */}
         <Route path="/features" element={<Features />} />

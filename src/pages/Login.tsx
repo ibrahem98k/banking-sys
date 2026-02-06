@@ -3,18 +3,32 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/UI/Button';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useBankStore } from '../store/useBankStore';
 
 export const Login: React.FC = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const login = useBankStore((state) => state.login);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
         // Mock login delay
         setTimeout(() => {
             setIsLoading(false);
-            navigate('/dashboard');
+            const isAdmin = email.toLowerCase() === 'admin@pesse.com';
+            login({
+                id: isAdmin ? '4' : '1',
+                firstName: isAdmin ? 'Admin' : 'John',
+                lastName: isAdmin ? 'Pesse' : 'Doe',
+                email: email,
+                role: isAdmin ? 'admin' : 'user',
+                status: 'approved'
+            });
+            navigate(isAdmin ? '/admin' : '/dashboard');
         }, 1500);
     };
 
@@ -124,6 +138,8 @@ export const Login: React.FC = () => {
                                     type="email"
                                     className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-gray-50"
                                     placeholder="name@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
                             </div>
@@ -137,6 +153,8 @@ export const Login: React.FC = () => {
                                     type="password"
                                     className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-gray-50"
                                     placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
                             </div>
