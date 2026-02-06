@@ -22,25 +22,83 @@ export const Login: React.FC = () => {
         <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white font-sans">
             {/* Left: Visual Side */}
             <div className="hidden lg:flex flex-col justify-between p-12 bg-black text-white relative overflow-hidden">
+                {/* Floating animated background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.2, 1],
+                            opacity: [0.1, 0.2, 0.1],
+                            x: [0, 50, 0],
+                            y: [0, -30, 0],
+                        }}
+                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-pesse-lime/30 rounded-full blur-[120px]"
+                    />
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.1, 1],
+                            opacity: [0.1, 0.15, 0.1],
+                            x: [0, -40, 0],
+                            y: [0, 40, 0],
+                        }}
+                        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                        className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[100px]"
+                    />
+
+                    {/* Animated grid lines or particles could go here, but let's stick to sleek orbs for now */}
+                    {[...Array(5)].map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0 }}
+                            animate={{
+                                opacity: [0.3, 0.6, 0.3],
+                                y: [0, -100, 0],
+                                x: [0, Math.random() * 50 - 25, 0],
+                            }}
+                            transition={{
+                                duration: 5 + Math.random() * 5,
+                                repeat: Infinity,
+                                ease: "linear",
+                                delay: Math.random() * 5,
+                            }}
+                            className="absolute bg-white/10 w-1 h-1 rounded-full"
+                            style={{
+                                top: `${Math.random() * 100}%`,
+                                left: `${Math.random() * 100}%`,
+                            }}
+                        />
+                    ))}
+                </div>
+
                 <div className="z-10">
-                    <Link to="/" className="text-2xl font-bold tracking-tight text-white flex items-center gap-2 mb-8">
-                        <ArrowLeft className="w-5 h-5" /> Back to Home
-                    </Link>
-                    <h1 className="text-6xl font-black leading-tight mt-10">
-                        Welcome <br /> Back.
-                    </h1>
-                    <p className="text-gray-400 mt-6 text-lg max-w-md">
-                        Access your secure dashboard and manage your finances with Pesse's advanced tools.
-                    </p>
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                    >
+                        <Link to="/" className="group text-lg font-medium text-white/70 hover:text-white flex items-center gap-2 mb-12 transition-all">
+                            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Back to Home
+                        </Link>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                    >
+                        <h1 className="text-7xl font-black leading-none mt-10 tracking-tighter">
+                            Welcome <br />
+                            <span className="text-pesse-lime">Back.</span>
+                        </h1>
+                        <p className="text-gray-400 mt-8 text-xl max-w-sm leading-relaxed font-light">
+                            Your gateway to intelligent banking. Secure, fast, and built for the future of finance.
+                        </p>
+                    </motion.div>
                 </div>
 
-                <div className="z-10 text-sm opacity-50">
-                    © 2026 Pesse Bank. Secure & Encrypted.
+                <div className="z-10 text-sm font-medium tracking-widest uppercase opacity-30">
+                    Pesse Digital Assets — Est. 2026
                 </div>
-
-                {/* Abstract Visuals */}
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-pesse-lime/20 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-900/20 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3 pointer-events-none"></div>
             </div>
 
             {/* Right: Form Side */}

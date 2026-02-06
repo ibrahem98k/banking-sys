@@ -21,27 +21,83 @@ export const Signup: React.FC = () => {
     return (
         <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white font-sans">
             {/* Left: Visual Side */}
-            <div className="hidden lg:flex flex-col justify-between p-12 bg-[#bef600] text-black relative overflow-hidden">
+            <div className="hidden lg:flex flex-col justify-between p-12 bg-pesse-lime text-black relative overflow-hidden">
+                {/* Floating animated background elements */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.3, 1],
+                            opacity: [0.2, 0.4, 0.2],
+                            rotate: [0, 90, 0],
+                        }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                        className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] border-[40px] border-black/5 rounded-[100px]"
+                    />
+                    <motion.div
+                        animate={{
+                            y: [0, -40, 0],
+                            x: [0, 30, 0],
+                        }}
+                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute bottom-[10%] right-[-10%] w-64 h-64 bg-black/10 rounded-full blur-3xl"
+                    />
+
+                    {/* Floating icons */}
+                    <motion.div
+                        animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-[20%] right-[15%] text-black/20"
+                    >
+                        <Check className="w-16 h-16" />
+                    </motion.div>
+                </div>
+
                 <div className="z-10">
-                    <Link to="/" className="text-2xl font-bold tracking-tight flex items-center gap-2 mb-8 text-black opacity-80 hover:opacity-100 transition-opacity">
-                        <ArrowLeft className="w-5 h-5" /> Back to Home
-                    </Link>
-                    <h1 className="text-6xl font-black leading-tight mt-10 tracking-tighter">
-                        Join the <br /> Future.
-                    </h1>
-                    <ul className="mt-10 space-y-4 text-xl font-medium">
-                        <li className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center"><Check className="w-4 h-4" /></div> Instant Setup</li>
-                        <li className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center"><Check className="w-4 h-4" /></div> No Hidden Fees</li>
-                        <li className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center"><Check className="w-4 h-4" /></div> Global Payments</li>
-                    </ul>
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <Link to="/" className="group text-lg font-medium text-black/70 hover:text-black flex items-center gap-2 mb-12 transition-all">
+                            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Back to Home
+                        </Link>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                    >
+                        <h1 className="text-7xl font-black leading-none mt-10 tracking-tighter">
+                            Join the <br />
+                            <span className="text-black/80">Future.</span>
+                        </h1>
+                        <ul className="mt-12 space-y-6">
+                            {[
+                                "Instant Account Setup",
+                                "Zero Hidden Fees",
+                                "Global Digital Assets"
+                            ].map((text, idx) => (
+                                <motion.li
+                                    key={idx}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.4 + (idx * 0.1) }}
+                                    className="flex items-center gap-4 text-xl font-bold italic uppercase"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-black text-pesse-lime flex items-center justify-center shadow-lg">
+                                        <Check className="w-6 h-6 stroke-[3]" />
+                                    </div>
+                                    {text}
+                                </motion.li>
+                            ))}
+                        </ul>
+                    </motion.div>
                 </div>
 
-                <div className="z-10 text-sm font-semibold opacity-60">
-                    © 2026 Pesse Bank.
+                <div className="z-10 text-sm font-black tracking-[0.2em] uppercase opacity-40">
+                    Secure Banking Node — 0x4F2A
                 </div>
-
-                {/* Abstract Visuals */}
-                <div className="absolute top-1/2 right-0 w-[900px] h-[900px] bg-white/30 rounded-full blur-[100px] translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-overlay"></div>
             </div>
 
             {/* Right: Form Side */}
