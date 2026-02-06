@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useBankStore } from '../../store/useBankStore';
 import { User, Phone, MapPin, ShieldCheck, Mail, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const UserInfoWidget: React.FC = () => {
     const user = useBankStore((state) => state.user);
@@ -45,9 +46,12 @@ export const UserInfoWidget: React.FC = () => {
                             {user?.tier || 'Basic'}
                         </span>
                     </div>
-                    <button className="text-xs font-black text-black uppercase tracking-widest hover:text-pesse-lime transition-colors border-b-2 border-pesse-lime pb-1">
+                    <Link
+                        to="/settings"
+                        className="text-xs font-black text-black uppercase tracking-widest hover:text-pesse-lime transition-colors border-b-2 border-pesse-lime pb-1"
+                    >
                         Edit Credentials
-                    </button>
+                    </Link>
                 </div>
             </div>
         </motion.div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Layout } from '../components/Layout/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCardVisual } from '../components/Dashboard/CreditCard';
-import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2, ArrowUpRight } from 'lucide-react';
+import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2 } from 'lucide-react';
 import { Button } from '../components/UI/Button';
 import { useBankStore } from '../store/useBankStore';
 
@@ -27,7 +27,7 @@ export const Cards: React.FC = () => {
             const newCard = {
                 id: 'c' + (cards.length + 1),
                 number: generateCardNumber(),
-                holder: `${user?.firstName} ${user?.lastName}`,
+                holder: user ? `${user.firstName} ${user.lastName}`.toUpperCase() : 'AUTHORIZED HOLDER',
                 expiry: '12/30',
                 type: cards.length % 2 === 0 ? 'mastercard' : 'visa' as any,
                 frozen: false,
@@ -89,14 +89,21 @@ export const Cards: React.FC = () => {
                                                 <CreditCardVisual card={card} showFullNumber={revealedIds.includes(card.id)} />
                                             </div>
 
-                                            {/* Status Badge - Floating or pinned */}
-                                            <div className="absolute -bottom-4 right-4 z-20">
-                                                <div className={`px-6 py-2.5 rounded-full border shadow-xl flex items-center gap-3 backdrop-blur-md ${card.frozen ? 'bg-black text-white border-white/10' : 'bg-white text-black border-gray-100'}`}>
-                                                    <div className={`w-2 h-2 rounded-full ${card.frozen ? 'bg-red-500' : 'bg-pesse-lime animate-pulse'}`} />
+                                            {/* Status Badge - Highest Z-Index to remain visible */}
+                                            <div className="absolute -bottom-4 right-8 z-[60]">
+                                                <motion.div
+                                                    initial={false}
+                                                    animate={{
+                                                        backgroundColor: card.frozen ? '#000000' : '#ffffff',
+                                                        color: card.frozen ? '#ffffff' : '#000000'
+                                                    }}
+                                                    className={`px-6 py-2.5 rounded-full border shadow-2xl flex items-center gap-3 backdrop-blur-md ${card.frozen ? 'border-white/20' : 'border-gray-100'}`}
+                                                >
+                                                    <div className={`w-2 h-2 rounded-full ${card.frozen ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-pesse-lime animate-pulse shadow-[0_0_10px_rgba(190,246,0,0.8)]'}`} />
                                                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                                                        {card.frozen ? 'Encrypted' : 'Live Asset'}
+                                                        {card.frozen ? 'Node Encrypted' : 'Asset Live'}
                                                     </span>
-                                                </div>
+                                                </motion.div>
                                             </div>
 
                                             {/* Reflection Glow */}
@@ -105,10 +112,14 @@ export const Cards: React.FC = () => {
                                             )}
 
                                             {card.frozen && (
-                                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[4px] rounded-[28px] flex items-center justify-center z-30 pointer-events-none">
-                                                    <div className="scale-150">
-                                                        <Lock size={32} className="text-white/80" />
-                                                    </div>
+                                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[6px] rounded-[28px] flex items-center justify-center z-50 pointer-events-none border border-black/10">
+                                                    <motion.div
+                                                        initial={{ scale: 0.5, opacity: 0 }}
+                                                        animate={{ scale: 1, opacity: 1 }}
+                                                        className="bg-white/10 p-5 rounded-full backdrop-blur-sm border border-white/20"
+                                                    >
+                                                        <Lock size={32} className="text-white" />
+                                                    </motion.div>
                                                 </div>
                                             )}
                                         </div>
@@ -121,7 +132,7 @@ export const Cards: React.FC = () => {
                                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Config Node v2.04.42-STABLE</p>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                <div className="grid grid-cols-3 gap-2">
                                                     <ControlBtn
                                                         active={card.frozen}
                                                         onClick={() => toggleCardFreeze(card.id)}
@@ -239,12 +250,9 @@ export const Cards: React.FC = () => {
 const ControlBtn: React.FC<{ active?: boolean, onClick: () => void, icon: React.ReactNode, label: string }> = ({ active, onClick, icon, label }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all group ${active ? 'bg-black border-black text-white' : 'bg-gray-50 border-transparent hover:border-pesse-lime hover:bg-white text-black'}`}
+        className={`w-full flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all group ${active ? 'bg-black border-black text-white' : 'bg-gray-50 border-transparent hover:border-pesse-lime hover:bg-white text-black'}`}
     >
-        <div className="flex items-center gap-3">
-            <span className={active ? 'text-pesse-lime' : 'text-gray-400 group-hover:text-black'}>{icon}</span>
-            <span className="font-black uppercase italic tracking-tighter text-xs">{label}</span>
-        </div>
-        <ArrowUpRight size={14} className="opacity-30 group-hover:opacity-100 transition-opacity" />
+        <span className={active ? 'text-pesse-lime' : 'text-gray-400 group-hover:text-black'}>{icon}</span>
+        <span className="font-black uppercase italic tracking-tighter text-[10px] whitespace-nowrap">{label}</span>
     </button>
 );

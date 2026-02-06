@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useBankStore } from '../../store/useBankStore';
+import { Link } from 'react-router-dom';
 import { ShoppingBag, Coffee, Monitor, ArrowDownLeft, CreditCard } from 'lucide-react';
 
 const getIcon = (merchant: string) => {
@@ -22,7 +23,7 @@ export const ActivityList: React.FC = () => {
         >
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-black tracking-tight">Recent Activity.</h3>
-                <button className="text-sm font-bold text-pesse-lime uppercase tracking-widest hover:opacity-80 transition-opacity">View All</button>
+                <Link to="/analytics" className="text-sm font-bold text-pesse-lime uppercase tracking-widest hover:opacity-80 transition-opacity">View All</Link>
             </div>
 
             <div className="space-y-4">

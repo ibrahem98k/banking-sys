@@ -59,9 +59,9 @@ export const CreditCardVisual: React.FC<CreditCardProps> = ({ card, showFullNumb
                 </div>
 
                 <div className="space-y-6">
-                    <div className="flex items-center gap-3 lg:gap-5 text-xl lg:text-2xl tracking-[0.2em] lg:tracking-[0.25em] font-mono font-black">
+                    <div className="flex items-center gap-3 lg:gap-5 text-lg lg:text-xl tracking-[0.2em] lg:tracking-[0.25em] font-mono font-black">
                         {groups.map((group, i) => (
-                            <span key={i} className={i === 3 ? 'text-2xl lg:text-3xl' : 'opacity-80'}>{group}</span>
+                            <span key={i} className={i === 3 ? 'text-xl lg:text-2xl' : 'opacity-80'}>{group}</span>
                         ))}
                     </div>
 

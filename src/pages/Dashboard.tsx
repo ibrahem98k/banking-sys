@@ -80,14 +80,18 @@ export const Dashboard: React.FC = () => {
 
                 {/* ROW 1: Balance & Credit Card */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <motion.div variants={itemVariants} className="lg:col-span-8">
+                    <motion.div variants={itemVariants} className="lg:col-span-7">
                         <div className="h-full bg-white border border-gray-100 rounded-[32px] p-2 shadow-sm">
                             <BalanceHero totalBalance={balance} />
                         </div>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="lg:col-span-4 rounded-[32px] overflow-hidden">
-                        <CreditCardVisual />
+                    <motion.div variants={itemVariants} className="lg:col-span-5">
+                        <div className="h-full bg-white border border-gray-100 rounded-[32px] p-6 shadow-sm flex items-center justify-center">
+                            <div className="w-full max-w-[460px]">
+                                <CreditCardVisual />
+                            </div>
+                        </div>
                     </motion.div>
                 </div>
 
