@@ -22,6 +22,12 @@ export interface MockUser {
   status: 'pending' | 'approved' | 'blocked';
   joinDate: string;
   selfie?: string; // Base64 or URL
+  documents?: {
+    main?: string;
+    secondary?: string;
+    residenceFront?: string;
+    residenceBack?: string;
+  };
 }
 
 // Mock Data
@@ -36,11 +42,21 @@ const MOCK_USERS: MockUser[] = [
     id: '2', firstName: 'Ahmed', lastName: 'Ali', phone: '+9647809876543', email: 'ahmed@example.com', role: 'user',
     status: 'pending',
     joinDate: '2024-02-15',
-    selfie: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop'
+    selfie: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+    documents: {
+      main: 'https://images.unsplash.com/photo-1633533452097-9e7975f7dd56?w=600&h=400&fit=crop',
+      secondary: 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?w=600&h=400&fit=crop',
+      residenceFront: 'https://images.unsplash.com/photo-1586041828039-b8d712e584c6?w=600&h=400&fit=crop',
+      residenceBack: 'https://images.unsplash.com/photo-1586041828039-b8d712e584c6?w=600&h=400&fit=crop'
+    }
   },
   {
     id: '3',
-    firstName: 'Sarah', lastName: 'Omer', phone: '+9647501112233', email: 'sara@example.com', role: 'user', status: 'blocked', joinDate: '2025-12-10'
+    firstName: 'Sarah', lastName: 'Omer', phone: '+9647501112233', email: 'sara@example.com', role: 'user', status: 'blocked', joinDate: '2025-12-10',
+    selfie: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=300&fit=crop',
+    documents: {
+      main: 'https://images.unsplash.com/photo-1633533452097-9e7975f7dd56?w=600&h=400&fit=crop'
+    }
   },
   { id: '4', firstName: 'Admin', lastName: 'Pesse', email: 'admin@pesse.com', role: 'admin', status: 'approved', joinDate: '2025-01-01' },
 ];
@@ -107,6 +123,15 @@ export const mockApi = {
         console.log("Processing salaries for:", employees);
         resolve({ success: true, count: employees.length });
       }, 2000);
+    });
+  },
+
+  registerUser: async (user: MockUser): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        MOCK_USERS.push(user);
+        resolve(true);
+      }, 800);
     });
   }
 };

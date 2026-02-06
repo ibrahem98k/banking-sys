@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Layout } from '../components/Layout/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCardVisual } from '../components/Dashboard/CreditCard';
-import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/UI/Button';
 import { useBankStore } from '../store/useBankStore';
 
@@ -53,8 +53,13 @@ export const Cards: React.FC = () => {
             setDeleteError('Security Protocol: Password Required');
             return;
         }
-        // Mock password check - logic simulation
-        if (passwordInput.length < 3) {
+        if (user?.password && passwordInput !== user.password) {
+            setDeleteError('Security Protocol: Invalid Credentials');
+            return;
+        }
+
+        // Fallback for demo users without password in store
+        if (!user?.password && passwordInput.length < 3) {
             setDeleteError('Security Protocol: Invalid Credentials');
             return;
         }
@@ -314,8 +319,8 @@ const ControlBtn: React.FC<{ active?: boolean, onClick: () => void, icon: React.
     <button
         onClick={onClick}
         className={`w-full flex flex-col items-center justify-center gap-3 p-5 rounded-[24px] border transition-all duration-300 group relative overflow-hidden ${active
-                ? 'bg-black text-white border-black shadow-xl shadow-black/20'
-                : 'bg-white border-gray-100 hover:border-pesse-lime hover:shadow-lg hover:shadow-pesse-lime/10 text-black'
+            ? 'bg-black text-white border-black shadow-xl shadow-black/20'
+            : 'bg-white border-gray-100 hover:border-pesse-lime hover:shadow-lg hover:shadow-pesse-lime/10 text-black'
             }`}
     >
         <span className={`transition-transform duration-300 group-hover:scale-110 ${active ? 'text-pesse-lime' : 'text-gray-400 group-hover:text-black'}`}>

@@ -24,6 +24,7 @@ import {
     Camera
 } from 'lucide-react';
 import { AdminEditModal } from '../components/Admin/AdminEditModal';
+import { AdminUserReviewModal } from '../components/Admin/AdminUserReviewModal';
 import { Button } from '../components/UI/Button';
 
 export const AdminDashboard: React.FC = () => {
@@ -40,6 +41,7 @@ export const AdminDashboard: React.FC = () => {
 
     // Edit modal states
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
 
     useEffect(() => {
@@ -182,7 +184,11 @@ export const AdminDashboard: React.FC = () => {
                                                 ) : filteredUsers.length === 0 ? (
                                                     <tr><td colSpan={4} className="px-12 py-32 text-center font-black text-gray-200 uppercase tracking-[0.5em]">No Nodes Detected</td></tr>
                                                 ) : filteredUsers.map((user) => (
-                                                    <tr key={user.id} className="hover:bg-pesse-light/30 transition-all group">
+                                                    <tr
+                                                        key={user.id}
+                                                        className="hover:bg-pesse-light/30 transition-all group cursor-pointer"
+                                                        onClick={() => { setSelectedUser(user); setIsReviewModalOpen(true); }}
+                                                    >
                                                         <td className="px-12 py-8">
                                                             <div className="flex items-center gap-6">
                                                                 <div className="relative group/avatar">
@@ -220,7 +226,7 @@ export const AdminDashboard: React.FC = () => {
                                                             </span>
                                                         </td>
                                                         <td className="px-12 py-8 text-right">
-                                                            <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                                                                 <ActionButton
                                                                     icon={<Edit3 size={18} />}
                                                                     onClick={() => { setSelectedUser(user); setIsEditModalOpen(true); }}

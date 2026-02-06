@@ -124,11 +124,11 @@ export const AdminEditModal: React.FC<AdminEditModalProps> = ({ isOpen, onClose,
                             </div>
 
                             <div className="pt-8 flex gap-4">
-                                <Button type="button" variant="ghost" className="flex-1 rounded-2xl" onClick={onClose}>Cancel</Button>
+                                <Button type="button" variant="ghost" className="flex-1 h-16 rounded-2xl font-black uppercase italic tracking-widest" onClick={onClose}>Cancel</Button>
                                 <Button
                                     type="submit"
                                     variant="primary"
-                                    className="flex-1 rounded-2xl bg-black text-white hover:bg-pesse-lime hover:text-black font-black uppercase italic tracking-tighter"
+                                    className="flex-1 h-16 rounded-2xl bg-black text-white hover:bg-pesse-lime hover:text-black font-black uppercase italic tracking-tighter shadow-xl shadow-black/10"
                                 >
                                     Authorize Updates
                                 </Button>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, CreditCard, PieChart, Settings, LogOut } from 'lucide-react';
+import { Home, CreditCard, PieChart, Settings, LogOut, ShieldCheck } from 'lucide-react';
 import { useBankStore } from '../../store/useBankStore';
 
 interface SidebarProps {
@@ -34,7 +34,9 @@ export const Sidebar: React.FC<SidebarProps> = () => {
                     {/* Admin Logo Link */}
                     {user?.role === 'admin' && (
                         <Link to="/admin">
-                            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-bold text-xs hover:scale-110 transition-transform cursor-pointer">P</div>
+                            <div className="w-12 h-12 rounded-full bg-black text-pesse-lime border-2 border-pesse-lime flex items-center justify-center shadow-[0_0_15px_rgba(190,246,0,0.4)] hover:scale-110 hover:shadow-[0_0_25px_rgba(190,246,0,0.6)] transition-all cursor-pointer">
+                                <ShieldCheck size={24} strokeWidth={3} />
+                            </div>
                         </Link>
                     )}
                 </div>

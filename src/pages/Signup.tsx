@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useBankStore } from '../store/useBankStore';
 import { FileUpload } from '../components/UI/FileUpload';
 import Webcam from 'react-webcam';
+import { mockApi } from '../api/mockApi';
 
 type DocType = 'passport' | 'id';
 
@@ -124,21 +125,45 @@ export const Signup: React.FC = () => {
         }, 1500);
     };
 
-    const verifyOtp = () => {
+    const verifyOtp = async () => {
         setIsLoading(true);
+
+        // Create document URLs
+        const selfieUrl = files.selfie ? URL.createObjectURL(files.selfie) : '';
+        const mainDocUrl = files.mainDoc ? URL.createObjectURL(files.mainDoc) : '';
+        const secondaryDocUrl = files.secondaryDoc ? URL.createObjectURL(files.secondaryDoc) : undefined;
+        const resFrontUrl = files.residenceFront ? URL.createObjectURL(files.residenceFront) : '';
+        const resBackUrl = files.residenceBack ? URL.createObjectURL(files.residenceBack) : '';
+
+        const newUser = {
+            id: Math.random().toString(36).substr(2, 9),
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            email: `${formData.firstName.toLowerCase()}@example.com`, // Generate mock email
+            role: 'user' as const,
+            status: 'pending' as const,
+            joinDate: new Date().toISOString().split('T')[0],
+            password: formData.password,
+            tier: 'basic' as const,
+            selfie: selfieUrl,
+            documents: {
+                type: formData.docType,
+                main: mainDocUrl,
+                secondary: secondaryDocUrl,
+                residenceFront: resFrontUrl,
+                residenceBack: resBackUrl
+            }
+        };
+
+        // Register to mock backend so it appears in Admin Dashboard
+        await mockApi.registerUser(newUser as any);
+
         setTimeout(() => {
             setIsLoading(false);
-            login({
-                id: Math.random().toString(36).substr(2, 9),
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                phone: formData.phone,
-                role: 'user',
-                status: 'pending',
-                tier: 'basic'
-            });
+            login(newUser as any);
             navigate('/dashboard');
-        }, 1500);
+        }, 1000);
     };
 
     const handleOtpChange = (index: number, value: string) => {

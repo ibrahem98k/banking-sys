@@ -2,7 +2,7 @@ import React from 'react';
 import { Layout } from '../components/Layout/Layout';
 import { motion } from 'framer-motion';
 import { Button } from '../components/UI/Button';
-import { Bell, Shield, Camera, Globe, Lock, ShieldCheck, Mail } from 'lucide-react';
+import { Bell, Shield, Globe, Lock, ShieldCheck, Mail } from 'lucide-react';
 import { useBankStore } from '../store/useBankStore';
 
 export const Settings: React.FC = () => {
