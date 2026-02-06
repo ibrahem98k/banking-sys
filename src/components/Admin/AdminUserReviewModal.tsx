@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShieldCheck, ShieldAlert, Check, FileText } from 'lucide-react';
+import { X, ShieldCheck, ShieldAlert, FileText } from 'lucide-react';
 import { Button } from '../UI/Button';
 
 interface AdminUserReviewModalProps {
@@ -160,8 +160,8 @@ export const AdminUserReviewModal: React.FC<AdminUserReviewModalProps> = ({ isOp
                         <Button
                             onClick={handleRestrict}
                             className={`flex-1 h-16 rounded-2xl font-black uppercase italic tracking-widest text-lg flex items-center justify-center gap-3 transition-all ${user.status === 'blocked'
-                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'bg-black text-white hover:bg-red-600 shadow-xl'
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-black text-white hover:bg-red-600 shadow-xl'
                                 }`}
                             disabled={user.status === 'blocked'}
                         >
@@ -171,8 +171,8 @@ export const AdminUserReviewModal: React.FC<AdminUserReviewModalProps> = ({ isOp
                         <Button
                             onClick={handleApprove}
                             className={`flex-[2] h-16 rounded-2xl font-black uppercase italic tracking-widest text-lg flex items-center justify-center gap-3 transition-all ${user.status === 'approved'
-                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                    : 'bg-pesse-lime text-black hover:scale-[1.02] shadow-xl shadow-pesse-lime/20'
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-pesse-lime text-black hover:scale-[1.02] shadow-xl shadow-pesse-lime/20'
                                 }`}
                             disabled={user.status === 'approved'}
                         >

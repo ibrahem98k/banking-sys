@@ -2,8 +2,9 @@ import React from 'react';
 import { Layout } from '../components/Layout/Layout';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
-import { ArrowUpRight, ArrowDownLeft, Filter, Shield } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Filter, Shield, Download } from 'lucide-react';
 import { useBankStore } from '../store/useBankStore';
+import { downloadTransactionsCSV } from '../utils/csvExport';
 
 const spendingData = [
     { name: 'Jan', amount: 2400 },
@@ -167,10 +168,13 @@ export const Analytics: React.FC = () => {
                             <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mt-2">Verified Ledger / Session ID: {Math.random().toString(36).substring(7).toUpperCase()}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="px-5 py-3 bg-gray-50 border border-gray-100 rounded-2xl flex items-center gap-3">
-                                <Shield size={16} className="text-pesse-lime" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-black">End-to-End Verified</span>
-                            </div>
+                            <button
+                                onClick={() => downloadTransactionsCSV(useBankStore.getState().transactions, `pesse-audit-${new Date().toISOString().split('T')[0]}.csv`)}
+                                className="p-4 bg-white border border-gray-100 rounded-2xl hover:bg-black hover:text-white transition-all shadow-sm group"
+                                title="Export CSV"
+                            >
+                                <Download size={18} className="group-hover:animate-bounce" />
+                            </button>
                             <button className="p-4 bg-black text-white rounded-2xl hover:bg-pesse-lime hover:text-black transition-all shadow-xl shadow-black/10">
                                 <Filter size={18} />
                             </button>
