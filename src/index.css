@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: #ffffff;
+  color: #0A0A0A;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #ffffff;
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white/50 backdrop-blur-lg border border-pesse-gray rounded-3xl shadow-sm;
+  }
+}
