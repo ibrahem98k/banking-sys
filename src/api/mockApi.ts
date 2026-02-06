@@ -69,25 +69,34 @@ export const mockApi = {
     });
   },
 
-  transfer: async (fromId: string, _toAccount: string, amount: number): Promise<{ success: boolean; message: string }> => {
-    // ... logic ...
-    return new Promise((resolve, reject) => {
+  deleteUser: async (userId: string): Promise<boolean> => {
+    return new Promise((resolve) => {
       setTimeout(() => {
-        if (amount <= 0) {
-          reject({ success: false, message: "Invalid amount" });
-          return;
-        }
-        const account = MOCK_ACCOUNTS.find(a => a.id === fromId);
-        if (!account) {
-          reject({ success: false, message: "Account not found" });
-          return;
-        }
-        if (account.balance < amount) {
-          reject({ success: false, message: "Insufficient funds" });
-          return;
-        }
-        resolve({ success: true, message: "Transfer successful" });
+        const index = MOCK_USERS.findIndex(u => u.id === userId);
+        if (index !== -1) MOCK_USERS.splice(index, 1);
+        resolve(true);
       }, 500);
+    });
+  },
+
+  updateUser: async (userId: string, data: any): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const index = MOCK_USERS.findIndex(u => u.id === userId);
+        if (index !== -1) {
+          MOCK_USERS[index] = { ...MOCK_USERS[index], ...data };
+        }
+        resolve(true);
+      }, 500);
+    });
+  },
+
+  processSalaries: async (employees: any[]): Promise<{ success: boolean; count: number }> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log("Processing salaries for:", employees);
+        resolve({ success: true, count: employees.length });
+      }, 2000);
     });
   }
 };

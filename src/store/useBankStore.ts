@@ -51,6 +51,8 @@ interface BankState {
     // Admin Actions
     setUsers: (users: User[]) => void;
     updateUserStatus: (userId: string, status: User['status']) => void;
+    deleteUser: (userId: string) => void;
+    updateUser: (userId: string, data: Partial<User>) => void;
 }
 
 export const useBankStore = create<BankState>()(
@@ -105,6 +107,14 @@ export const useBankStore = create<BankState>()(
 
             updateUserStatus: (userId, status) => set((state) => ({
                 allUsers: state.allUsers.map(u => u.id === userId ? { ...u, status } : u)
+            })),
+
+            deleteUser: (userId) => set((state) => ({
+                allUsers: state.allUsers.filter(u => u.id !== userId)
+            })),
+
+            updateUser: (userId, data) => set((state) => ({
+                allUsers: state.allUsers.map(u => u.id === userId ? { ...u, ...data } : u)
             })),
         }),
         {
