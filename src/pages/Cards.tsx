@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { Layout } from '../components/Layout/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCardVisual } from '../components/Dashboard/CreditCard';
-import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2 } from 'lucide-react';
+import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/UI/Button';
 import { useBankStore } from '../store/useBankStore';
 
 export const Cards: React.FC = () => {
-    const { cards, user, addCard, toggleCardFreeze } = useBankStore();
+    const { cards, user, addCard, toggleCardFreeze, deleteCard } = useBankStore();
     const [isAdding, setIsAdding] = useState(false);
+    const [deleteCardId, setDeleteCardId] = useState<string | null>(null);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [deleteError, setDeleteError] = useState('');
     const [loading, setLoading] = useState(false);
     const [revealedIds, setRevealedIds] = useState<string[]>([]);
     const [activeLimitId, setActiveLimitId] = useState<string | null>(null);
@@ -43,6 +46,25 @@ export const Cards: React.FC = () => {
         setRevealedIds(prev =>
             prev.includes(id) ? prev.filter(mid => mid !== id) : [...prev, id]
         );
+    };
+
+    const confirmDelete = () => {
+        if (!passwordInput) {
+            setDeleteError('Security Protocol: Password Required');
+            return;
+        }
+        // Mock password check - logic simulation
+        if (passwordInput.length < 3) {
+            setDeleteError('Security Protocol: Invalid Credentials');
+            return;
+        }
+
+        if (deleteCardId) {
+            deleteCard(deleteCardId);
+            setDeleteCardId(null);
+            setPasswordInput('');
+            setDeleteError('');
+        }
     };
 
     return (
@@ -132,7 +154,7 @@ export const Cards: React.FC = () => {
                                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Config Node v2.04.42-STABLE</p>
                                                 </div>
 
-                                                <div className="grid grid-cols-3 gap-2">
+                                                <div className="grid grid-cols-4 gap-2">
                                                     <ControlBtn
                                                         active={card.frozen}
                                                         onClick={() => toggleCardFreeze(card.id)}
@@ -148,6 +170,11 @@ export const Cards: React.FC = () => {
                                                         onClick={() => toggleReveal(card.id)}
                                                         icon={revealedIds.includes(card.id) ? <EyeOff size={16} /> : <Eye size={16} />}
                                                         label={revealedIds.includes(card.id) ? 'Hide Info' : 'Reveal Data'}
+                                                    />
+                                                    <ControlBtn
+                                                        onClick={() => setDeleteCardId(card.id)}
+                                                        icon={<Trash2 size={16} className="text-red-500" />}
+                                                        label="Terminate"
                                                     />
                                                 </div>
                                             </div>
@@ -240,9 +267,70 @@ export const Cards: React.FC = () => {
                             </motion.div>
                         )}
                     </AnimatePresence>
+
+                    {/* Delete Confirmation Modal */}
+                    <AnimatePresence>
+                        {deleteCardId && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+                                <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.9, opacity: 0 }}
+                                    className="bg-white rounded-[32px] p-10 max-w-md w-full shadow-2xl relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-fullblur-3xl"></div>
+
+                                    <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-6 mx-auto">
+                                        <AlertTriangle size={28} />
+                                    </div>
+
+                                    <h3 className="text-2xl font-black text-center text-black uppercase italic tracking-tighter mb-2">Protocol Warning</h3>
+                                    <p className="text-center text-gray-400 text-sm font-bold uppercase tracking-widest mb-8">Authorize Node Termination</p>
+
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic ml-2">Node Access Key (Password)</label>
+                                            <input
+                                                type="password"
+                                                value={passwordInput}
+                                                onChange={(e) => {
+                                                    setPasswordInput(e.target.value);
+                                                    setDeleteError('');
+                                                }}
+                                                className="w-full h-14 bg-gray-50 border-2 border-transparent focus:border-red-500 focus:bg-white rounded-xl px-4 outline-none transition-all font-black uppercase italic tracking-tighter text-lg"
+                                                placeholder="••••••••"
+                                            />
+                                            {deleteError && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest italic ml-2">{deleteError}</p>}
+                                        </div>
+
+                                        <div className="flex gap-3 pt-4">
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => {
+                                                    setDeleteCardId(null);
+                                                    setPasswordInput('');
+                                                    setDeleteError('');
+                                                }}
+                                                className="flex-1 h-14 rounded-xl border-2 border-gray-100 font-black uppercase italic tracking-tighter text-gray-400 hover:border-black hover:text-black transition-all"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                variant="primary"
+                                                onClick={confirmDelete}
+                                                className="flex-1 h-14 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all font-black uppercase italic tracking-tighter shadow-lg shadow-red-500/20"
+                                            >
+                                                Confirm Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+                    </AnimatePresence>
                 </motion.div>
-            </div>
-        </Layout>
+            </div >
+        </Layout >
     );
 };
 

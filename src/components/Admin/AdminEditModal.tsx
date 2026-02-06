@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Mail, Shield, CheckCircle } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '../UI/Button';
 
 interface AdminEditModalProps {

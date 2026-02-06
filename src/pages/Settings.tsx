@@ -1,8 +1,8 @@
 import React from 'react';
 import { Layout } from '../components/Layout/Layout';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '../components/UI/Button';
-import { User, Bell, Shield, ChevronRight, Camera, Globe, Lock, ShieldCheck, Mail } from 'lucide-react';
+import { Bell, Shield, Camera, Globe, Lock, ShieldCheck, Mail } from 'lucide-react';
 import { useBankStore } from '../store/useBankStore';
 
 export const Settings: React.FC = () => {
@@ -65,8 +65,8 @@ export const Settings: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <FormInput label="First Name" value={user?.firstName || ''} />
                                 <FormInput label="Last Name" value={user?.lastName || ''} />
-                                <FormInput label="Email Address" value={user?.email || ''} icon={<Mail size={16} />} />
-                                <FormInput label="Phone Number" value="+964 770 123 4567" />
+                                <FormInput label="Email Address" value={user?.email || 'NOT CONFIGURED'} icon={<Mail size={16} />} />
+                                <FormInput label="Phone Number" value={user?.phone || 'NOT CONFIGURED'} />
                             </div>
                         </section>
 

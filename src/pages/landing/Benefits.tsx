@@ -1,9 +1,14 @@
 import React from 'react';
 import { LandingLayout } from '../../components/Layout/LandingLayout';
 import { motion } from 'framer-motion';
-import { ArrowRight, TrendingUp, ShieldCheck, Wallet, PieChart, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useBankStore } from '../../store/useBankStore';
+import { ArrowRight, TrendingUp, ShieldCheck, Wallet, PieChart, Sparkles, Globe } from 'lucide-react';
 
 export const Benefits: React.FC = () => {
+    const { user } = useBankStore();
+    const navigate = useNavigate();
+
     return (
         <LandingLayout>
             <div className="relative overflow-hidden min-h-screen">
@@ -123,20 +128,60 @@ export const Benefits: React.FC = () => {
                     </div>
 
                     {/* Secondary Benefits Bento */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { title: "Global Access", desc: "No foreign transaction fees, ever.", img: "🌍" },
-                            { title: "Safety First", desc: "Block your card in one tap.", img: "🔒" },
-                            { title: "Smart Budgets", desc: "Auto-sort your income.", img: "📊" }
+                            {
+                                title: "Global Access",
+                                desc: "No foreign transaction fees, ever.",
+                                icon: Globe,
+                                color: "blue",
+                                iconBg: "bg-blue-50 text-blue-600",
+                                borderHover: "hover:border-blue-200"
+                            },
+                            {
+                                title: "Safety First",
+                                desc: "Block your card in one tap.",
+                                icon: ShieldCheck,
+                                color: "orange",
+                                iconBg: "bg-orange-50 text-orange-600",
+                                borderHover: "hover:border-orange-200"
+                            },
+                            {
+                                title: "Smart Budgets",
+                                desc: "Auto-sort your income.",
+                                icon: PieChart,
+                                color: "purple",
+                                iconBg: "bg-purple-50 text-purple-600",
+                                borderHover: "hover:border-purple-200"
+                            }
                         ].map((b, i) => (
                             <motion.div
                                 key={i}
-                                whileHover={{ y: -10 }}
-                                className="bg-gray-50 border border-gray-100 rounded-[2.5rem] p-10 flex flex-col items-center text-center shadow-sm"
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.2 * i, duration: 0.8 }}
+                                whileHover={{
+                                    y: -8,
+                                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.08)",
+                                }}
+                                className={`group bg-white border border-gray-100 rounded-[3rem] p-12 flex flex-col items-center text-center transition-all duration-500 hover:shadow-2xl hover:shadow-gray-200/50 ${b.borderHover}`}
                             >
-                                <div className="text-5xl mb-6">{b.img}</div>
-                                <h3 className="text-2xl font-black text-black mb-2">{b.title}</h3>
-                                <p className="text-gray-400 font-medium">{b.desc}</p>
+                                <div className={`w-24 h-24 rounded-3xl ${b.iconBg} flex items-center justify-center mb-8 relative group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
+                                    <div className="absolute inset-0 rounded-3xl bg-current opacity-10 group-hover:opacity-20 transition-opacity blur-xl"></div>
+                                    <b.icon size={44} strokeWidth={1.5} className="relative z-10" />
+                                </div>
+                                <h3 className="text-3xl font-black text-black mb-4 tracking-tighter">{b.title}</h3>
+                                <p className="text-gray-400 font-medium text-lg leading-relaxed max-w-[200px]">{b.desc}</p>
+
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    whileHover={{ opacity: 1, scale: 1 }}
+                                    onClick={() => user?.role === 'admin' && navigate('/admin')}
+                                    className={`mt-8 flex items-center gap-2 font-black uppercase tracking-widest text-xs ${user?.role === 'admin' ? 'text-black cursor-pointer hover:scale-105' : 'text-gray-300 cursor-default'}`}
+                                >
+                                    {user?.role === 'admin' ? 'Access Authority' : 'Details Protected'} <ArrowRight size={14} />
+                                </motion.div>
                             </motion.div>
                         ))}
                     </div>

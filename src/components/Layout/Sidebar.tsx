@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, CreditCard, PieChart, Settings, LogOut } from 'lucide-react';
+import { useBankStore } from '../../store/useBankStore';
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -22,6 +23,7 @@ const NavIcon = ({ icon: Icon, active = false, to }: { icon: any, active?: boole
 
 export const Sidebar: React.FC<SidebarProps> = () => {
     const location = useLocation();
+    const { user } = useBankStore();
     const isActive = (path: string) => location.pathname === path;
 
     return (
@@ -29,8 +31,12 @@ export const Sidebar: React.FC<SidebarProps> = () => {
             {/* Desktop Sidebar (Left Pill) */}
             <aside className="hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-50 flex-col items-center gap-8 py-8 px-3 bg-white border border-pesse-gray rounded-full shadow-xl shadow-black/5">
                 <div className="mb-2">
-                    {/* Logo Placeholder */}
-                    <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-bold text-xs">P</div>
+                    {/* Admin Logo Link */}
+                    {user?.role === 'admin' && (
+                        <Link to="/admin">
+                            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-bold text-xs hover:scale-110 transition-transform cursor-pointer">P</div>
+                        </Link>
+                    )}
                 </div>
 
                 <nav className="flex flex-col gap-6">

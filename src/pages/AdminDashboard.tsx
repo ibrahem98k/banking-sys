@@ -70,7 +70,7 @@ export const AdminDashboard: React.FC = () => {
     const handleProcessSalaries = async () => {
         setIsProcessing(true);
         // Simulate processing
-        const result = await mockApi.processSalaries([1, 2, 3, 4, 5]);
+        await mockApi.processSalaries([1, 2, 3, 4, 5]);
         setIsProcessing(false);
         setProcessComplete(true);
         setTimeout(() => setProcessComplete(false), 5000);
@@ -79,7 +79,8 @@ export const AdminDashboard: React.FC = () => {
 
     const filteredUsers = allUsers.filter(u =>
         `${u.firstName} ${u.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.phone?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const stats = {
@@ -188,7 +189,7 @@ export const AdminDashboard: React.FC = () => {
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-xl font-black text-black leading-tight italic uppercase tracking-tighter">{user.firstName} {user.lastName}</p>
-                                                                    <p className="text-[10px] text-gray-400 font-bold tracking-widest uppercase mt-1 opacity-50">{user.email}</p>
+                                                                    <p className="text-[10px] text-gray-400 font-bold tracking-widest uppercase mt-1 opacity-50">{user.email || user.phone}</p>
                                                                 </div>
                                                             </div>
                                                         </td>

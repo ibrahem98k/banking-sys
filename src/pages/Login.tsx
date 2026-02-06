@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/UI/Button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Cpu, Zap, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useBankStore } from '../store/useBankStore';
 
 export const Login: React.FC = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
-    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const login = useBankStore((state) => state.login);
 
     const handleLogin = (e: React.FormEvent) => {
@@ -19,25 +20,62 @@ export const Login: React.FC = () => {
         // Mock login delay
         setTimeout(() => {
             setIsLoading(false);
-            const isAdmin = email.toLowerCase() === 'admin@pesse.com';
+            const isAdmin = phone === '07500000000'; // Admin Phone Mock
             login({
                 id: isAdmin ? '4' : '1',
                 firstName: isAdmin ? 'Admin' : 'John',
                 lastName: isAdmin ? 'Pesse' : 'Doe',
-                email: email,
+                phone: phone,
                 role: isAdmin ? 'admin' : 'user',
-                status: 'approved'
+                status: 'approved',
+                tier: isAdmin ? 'elite' : 'basic'
             });
-            navigate(isAdmin ? '/admin' : '/dashboard');
+            if (isAdmin) {
+                navigate('/admin');
+            } else {
+                navigate('/dashboard');
+            }
         }, 1500);
     };
 
     return (
         <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white font-sans">
             {/* Left: Visual Side */}
-            <div className="hidden lg:flex flex-col justify-between p-12 bg-black text-white relative overflow-hidden">
+            <div className="hidden lg:flex flex-col justify-between p-12 bg-black text-white relative overflow-hidden order-1">
                 {/* Floating animated background elements */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    {/* Primary Rotating Square */}
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.3, 1],
+                            opacity: [0.1, 0.2, 0.1],
+                            rotate: [0, -90, 0],
+                        }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] border-[40px] border-white/5 rounded-[120px]"
+                    />
+
+                    {/* Secondary Reverse Rotating Square */}
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.2, 1],
+                            opacity: [0.05, 0.1, 0.05],
+                            rotate: [0, 180, 0],
+                        }}
+                        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                        className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] border-[30px] border-pesse-lime/10 rounded-[80px]"
+                    />
+
+                    {/* Moving Scanning Line */}
+                    <motion.div
+                        animate={{
+                            y: ['-100%', '200%'],
+                            opacity: [0, 0.3, 0],
+                        }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-pesse-lime/50 to-transparent blur-sm"
+                    />
+
                     <motion.div
                         animate={{
                             scale: [1, 1.2, 1],
@@ -46,31 +84,56 @@ export const Login: React.FC = () => {
                             y: [0, -30, 0],
                         }}
                         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-pesse-lime/30 rounded-full blur-[120px]"
+                        className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-pesse-lime/20 rounded-full blur-[120px]"
                     />
+
                     <motion.div
                         animate={{
                             scale: [1, 1.1, 1],
-                            opacity: [0.1, 0.15, 0.1],
+                            opacity: [0.05, 0.1, 0.05],
                             x: [0, -40, 0],
                             y: [0, 40, 0],
                         }}
                         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[100px]"
+                        className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px]"
                     />
 
-                    {/* Animated grid lines or particles could go here, but let's stick to sleek orbs for now */}
-                    {[...Array(5)].map((_, i) => (
+                    {/* Floating icons */}
+                    <motion.div
+                        animate={{ y: [0, -30, 0], rotate: [0, -10, 0], opacity: [0.1, 0.2, 0.1] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-[25%] left-[10%] text-white"
+                    >
+                        <ShieldCheck className="w-20 h-20" />
+                    </motion.div>
+
+                    <motion.div
+                        animate={{ y: [0, 40, 0], rotate: [0, 20, 0], opacity: [0.05, 0.15, 0.05] }}
+                        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                        className="absolute top-[20%] right-[15%] text-pesse-lime"
+                    >
+                        <Cpu className="w-24 h-24" />
+                    </motion.div>
+
+                    <motion.div
+                        animate={{ x: [0, 20, 0], scale: [1, 1.1, 1], opacity: [0.05, 0.1, 0.05] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                        className="absolute top-[50%] right-[30%] text-white"
+                    >
+                        <Zap className="w-12 h-12" />
+                    </motion.div>
+
+                    {[...Array(15)].map((_, i) => (
                         <motion.div
                             key={i}
                             initial={{ opacity: 0 }}
                             animate={{
-                                opacity: [0.3, 0.6, 0.3],
-                                y: [0, -100, 0],
-                                x: [0, Math.random() * 50 - 25, 0],
+                                opacity: [0.1, 0.4, 0.1],
+                                y: [0, -200, 0],
+                                x: [0, Math.random() * 60 - 30, 0],
                             }}
                             transition={{
-                                duration: 5 + Math.random() * 5,
+                                duration: 10 + Math.random() * 10,
                                 repeat: Infinity,
                                 ease: "linear",
                                 delay: Math.random() * 5,
@@ -82,6 +145,7 @@ export const Login: React.FC = () => {
                             }}
                         />
                     ))}
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
                 </div>
 
                 <div className="z-10">
@@ -116,7 +180,7 @@ export const Login: React.FC = () => {
             </div>
 
             {/* Right: Form Side */}
-            <div className="flex flex-col justify-center items-center p-8 lg:p-24 relative">
+            <div className="flex flex-col justify-center items-center p-8 lg:p-24 relative order-2">
                 {/* Mobile Back Button */}
                 <Link to="/" className="absolute top-8 left-8 lg:hidden text-black flex items-center gap-2 font-medium">
                     <ArrowLeft className="w-5 h-5" /> Home
@@ -133,13 +197,13 @@ export const Login: React.FC = () => {
 
                         <form onSubmit={handleLogin} className="flex flex-col gap-6">
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-semibold text-gray-700">Email Address</label>
+                                <label className="text-sm font-semibold text-gray-700">Phone Number</label>
                                 <input
-                                    type="email"
+                                    type="tel"
                                     className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-gray-50"
-                                    placeholder="name@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="+964 750 000 0000"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
                                     required
                                 />
                             </div>
@@ -149,14 +213,23 @@ export const Login: React.FC = () => {
                                     <label className="text-sm font-semibold text-gray-700">Password</label>
                                     <a href="#" className="text-sm font-medium text-pesse-lime hover:opacity-80 transition-opacity">Forgot?</a>
                                 </div>
-                                <input
-                                    type="password"
-                                    className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-gray-50"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        className="w-full h-12 pl-4 pr-12 rounded-xl border border-gray-200 focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-gray-50"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+                                </div>
                             </div>
 
                             <Button

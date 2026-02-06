@@ -23,10 +23,18 @@ interface User {
     id: string;
     firstName: string;
     lastName: string;
-    email: string;
+    email?: string;
+    phone?: string;
     role: 'user' | 'admin';
     status: 'pending' | 'approved' | 'blocked';
     tier: 'basic' | 'premium' | 'elite';
+    documents?: {
+        type: 'passport' | 'id';
+        main: string;
+        secondary?: string;
+        residenceFront: string;
+        residenceBack: string;
+    };
 }
 
 interface BankState {
@@ -53,6 +61,7 @@ interface BankState {
     updateUserStatus: (userId: string, status: User['status']) => void;
     deleteUser: (userId: string) => void;
     updateUser: (userId: string, data: Partial<User>) => void;
+    deleteCard: (cardId: string) => void;
 }
 
 export const useBankStore = create<BankState>()(
@@ -115,6 +124,10 @@ export const useBankStore = create<BankState>()(
 
             updateUser: (userId, data) => set((state) => ({
                 allUsers: state.allUsers.map(u => u.id === userId ? { ...u, ...data } : u)
+            })),
+
+            deleteCard: (cardId) => set((state) => ({
+                cards: state.cards.filter(c => c.id !== cardId)
             })),
         }),
         {

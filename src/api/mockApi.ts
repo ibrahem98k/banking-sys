@@ -16,7 +16,8 @@ export interface MockUser {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
+  phone?: string;
   role: 'user' | 'admin';
   status: 'pending' | 'approved' | 'blocked';
   joinDate: string;
@@ -29,9 +30,9 @@ const MOCK_ACCOUNTS: Account[] = [
 ];
 
 const MOCK_USERS: MockUser[] = [
-  { id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', role: 'user', status: 'approved', joinDate: '2026-01-15' },
-  { id: '2', firstName: 'Ahmed', lastName: 'Ali', email: 'ahmed@example.com', role: 'user', status: 'pending', joinDate: '2026-02-01' },
-  { id: '3', firstName: 'Sara', lastName: 'Omer', email: 'sara@example.com', role: 'user', status: 'blocked', joinDate: '2025-12-10' },
+  { id: '1', firstName: 'John', lastName: 'Doe', phone: '+9647701234567', email: 'john@example.com', role: 'user', status: 'approved', joinDate: '2026-01-15' },
+  { id: '2', firstName: 'Ahmed', lastName: 'Ali', phone: '+9647809876543', email: 'ahmed@example.com', role: 'user', status: 'pending', joinDate: '2026-02-01' },
+  { id: '3', firstName: 'Sara', lastName: 'Omer', phone: '+9647501112233', email: 'sara@example.com', role: 'user', status: 'blocked', joinDate: '2025-12-10' },
   { id: '4', firstName: 'Admin', lastName: 'Pesse', email: 'admin@pesse.com', role: 'admin', status: 'approved', joinDate: '2025-01-01' },
 ];
 

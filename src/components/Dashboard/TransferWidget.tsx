@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Account } from '../../api/mockApi';
 import { Button } from '../UI/Button';
-import { DollarSign, CheckCircle2, X, Download, ShieldCheck, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, X, Download, ShieldCheck, Loader2, ArrowRight } from 'lucide-react';
 import { useBankStore } from '../../store/useBankStore';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
