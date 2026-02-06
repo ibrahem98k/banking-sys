@@ -46,12 +46,19 @@ export const Settings: React.FC = () => {
 
                             <div className="flex flex-col md:flex-row items-center gap-12 mb-12">
                                 <div className="relative">
-                                    <div className="w-32 h-32 rounded-[40px] bg-black text-white flex items-center justify-center text-4xl font-black italic tracking-tighter overflow-hidden">
-                                        {user?.firstName?.[0]}{user?.lastName?.[0]}
+                                    <div className="w-32 h-32 rounded-[40px] bg-black text-white flex items-center justify-center text-4xl font-black italic tracking-tighter overflow-hidden border-4 border-white shadow-2xl relative">
+                                        {user?.selfie ? (
+                                            <img src={user.selfie} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span>{user?.firstName?.[0]}{user?.lastName?.[0]}</span>
+                                        )}
+                                        {user?.selfie && (
+                                            <div className="absolute bottom-2 right-2 bg-pesse-lime text-black p-2 rounded-xl shadow-lg">
+                                                <Lock size={14} strokeWidth={3} />
+                                            </div>
+                                        )}
                                     </div>
-                                    <button className="absolute -bottom-2 -right-2 p-3 bg-pesse-lime text-black rounded-2xl shadow-xl hover:scale-110 transition-transform">
-                                        <Camera size={20} />
-                                    </button>
+                                    {/* Edit button removed to enforce immutability */}
                                 </div>
                                 <div className="space-y-2 text-center md:text-left">
                                     <h3 className="text-xl font-black text-black uppercase tracking-tight italic">{user?.firstName} {user?.lastName}</h3>

@@ -13,10 +13,13 @@ import {
     Scan,
     Lock,
     User as UserIcon,
+    Camera,
+    RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBankStore } from '../store/useBankStore';
 import { FileUpload } from '../components/UI/FileUpload';
+import Webcam from 'react-webcam';
 
 type DocType = 'passport' | 'id';
 
@@ -60,6 +63,7 @@ export const Signup: React.FC = () => {
     const login = useBankStore((state) => state.login);
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+    const webcamRef = React.useRef<Webcam>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -70,6 +74,19 @@ export const Signup: React.FC = () => {
         confirmPassword: '',
         docType: 'passport' as DocType,
     });
+
+    const captureSelfie = React.useCallback(() => {
+        const imageSrc = webcamRef.current?.getScreenshot();
+        if (imageSrc) {
+            // Convert base64 to file for consistency
+            fetch(imageSrc)
+                .then(res => res.blob())
+                .then(blob => {
+                    const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
+                    setFiles(prev => ({ ...prev, selfie: file }));
+                });
+        }
+    }, [webcamRef]);
 
     // File State
     const [files, setFiles] = useState<{
@@ -497,7 +514,77 @@ export const Signup: React.FC = () => {
                         className="space-y-8"
                     >
                         <div className="space-y-2">
-                            <h2 className="text-3xl font-black text-black tracking-tighter uppercase italic">Step 5: Protocol Review.</h2>
+                            <h2 className="text-3xl font-black text-black tracking-tighter uppercase italic">Step 5: Biometric Link.</h2>
+                            <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Facial verification protocol required</p>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="bg-gray-50 rounded-[32px] p-6 relative overflow-hidden">
+                                {files.selfie ? (
+                                    <div className="relative aspect-video rounded-2xl overflow-hidden mb-6 group">
+                                        <img src={URL.createObjectURL(files.selfie)} alt="Selfie" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                onClick={() => setFiles(prev => ({ ...prev, selfie: null }))}
+                                                className="bg-white text-black px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-pesse-lime transition-colors"
+                                            >
+                                                <RefreshCw size={16} className="mr-2 inline" /> Retake Protocol
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-black mb-6 border-2 border-pesse-lime/20 shadow-2xl">
+                                        <Webcam
+                                            audio={false}
+                                            ref={webcamRef}
+                                            screenshotFormat="image/jpeg"
+                                            className="w-full h-full object-cover"
+                                            videoConstraints={{ facingMode: "user" }}
+                                        />
+                                        <div className="absolute inset-0 pointer-events-none">
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-64 border-2 border-pesse-lime/50 rounded-[48%] opacity-50"></div>
+                                            <div className="absolute top-4 right-4 flex items-center gap-2 text-pesse-lime animate-pulse">
+                                                <div className="w-2 h-2 bg-pesse-lime rounded-full"></div>
+                                                <span className="text-[8px] font-black uppercase tracking-widest">Live Feed</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!files.selfie && (
+                                    <Button
+                                        onClick={captureSelfie}
+                                        className="w-full h-16 bg-black text-white rounded-2xl font-black uppercase italic tracking-widest hover:bg-pesse-lime hover:text-black transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-3"
+                                    >
+                                        <Camera size={20} /> Capture Biometrics
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 mt-8">
+                            <Button variant="secondary" onClick={prevStep} className="h-16 flex-1 rounded-2xl font-black uppercase italic tracking-widest border-2">
+                                <ChevronLeft /> Back
+                            </Button>
+                            <Button
+                                onClick={nextStep}
+                                disabled={!files.selfie}
+                                className="h-16 flex-[2] bg-black text-white rounded-2xl font-black uppercase italic tracking-widest disabled:opacity-30"
+                            >
+                                Verify Identity <ChevronRight />
+                            </Button>
+                        </div>
+                    </motion.div>
+                );
+            case 6:
+                return (
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="space-y-8"
+                    >
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-black text-black tracking-tighter uppercase italic">Step 6: Protocol Review.</h2>
                             <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Verify all information before final transmission</p>
                         </div>
 
@@ -518,12 +605,13 @@ export const Signup: React.FC = () => {
                             </div>
                             <div className="space-y-3">
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic ml-2">Captured Documents</p>
-                                <div className="grid grid-cols-4 gap-3">
+                                <div className="grid grid-cols-5 gap-3">
                                     {[
                                         { file: files.mainDoc, label: formData.docType === 'id' ? 'ID FRONT' : 'PASSPORT' },
                                         { file: files.secondaryDoc, label: 'ID BACK' },
                                         { file: files.residenceFront, label: 'RES FRONT' },
-                                        { file: files.residenceBack, label: 'RES BACK' }
+                                        { file: files.residenceBack, label: 'RES BACK' },
+                                        { file: files.selfie, label: 'BIO VERIFICATION' }
                                     ].filter(item => item.file).map((item, i) => (
                                         <div key={i} className="flex flex-col gap-2">
                                             <div className="aspect-[4/3] bg-white rounded-2xl overflow-hidden border-2 border-white shadow-md relative group">
@@ -557,7 +645,7 @@ export const Signup: React.FC = () => {
                         </div>
                     </motion.div>
                 );
-            case 6:
+            case 7:
                 return (
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
@@ -696,7 +784,7 @@ export const Signup: React.FC = () => {
                 <div className="w-full max-w-xl">
                     {/* Step Progress Bar */}
                     <div className="flex gap-1 mb-16">
-                        {[1, 2, 3, 4, 5, 6].map((it) => (
+                        {[1, 2, 3, 4, 5, 6, 7].map((it) => (
                             <div key={it} className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${it <= step ? 'bg-pesse-lime' : 'bg-gray-100'}`} />
                         ))}
                     </div>
@@ -705,10 +793,10 @@ export const Signup: React.FC = () => {
                         {renderStep()}
                     </AnimatePresence>
 
-                    {step < 6 && (
+                    {step < 7 && (
                         <div className="mt-12 text-center">
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                Protocol checkpoint {step} of 6
+                                Protocol checkpoint {step} of 7
                             </p>
                             <p className="mt-4 text-xs text-gray-400">
                                 Already registered? <Link to="/login" className="text-black font-black hover:underline underline-offset-4 italic uppercase">Initialize Session</Link>

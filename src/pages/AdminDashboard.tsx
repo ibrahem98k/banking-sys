@@ -20,7 +20,8 @@ import {
     Activity,
     ShieldAlert,
     Database,
-    Loader2
+    Loader2,
+    Camera
 } from 'lucide-react';
 import { AdminEditModal } from '../components/Admin/AdminEditModal';
 import { Button } from '../components/UI/Button';
@@ -184,8 +185,19 @@ export const AdminDashboard: React.FC = () => {
                                                     <tr key={user.id} className="hover:bg-pesse-light/30 transition-all group">
                                                         <td className="px-12 py-8">
                                                             <div className="flex items-center gap-6">
-                                                                <div className="w-14 h-14 rounded-2xl bg-black text-pesse-lime flex items-center justify-center font-black text-xl italic shadow-xl group-hover:scale-110 transition-transform">
-                                                                    {user.firstName[0]}{user.lastName[0]}
+                                                                <div className="relative group/avatar">
+                                                                    <div className="w-14 h-14 rounded-2xl bg-black text-white flex items-center justify-center font-black text-xl italic shadow-xl group-hover:scale-110 transition-transform overflow-hidden">
+                                                                        {user.selfie ? (
+                                                                            <img src={user.selfie} alt="Selfie" className="w-full h-full object-cover" />
+                                                                        ) : (
+                                                                            <span>{user.firstName[0]}{user.lastName[0]}</span>
+                                                                        )}
+                                                                    </div>
+                                                                    {user.selfie && (
+                                                                        <div className="absolute -bottom-2 -right-2 bg-pesse-lime text-black p-1.5 rounded-lg shadow-md scale-75 border-2 border-white">
+                                                                            <Camera size={12} strokeWidth={3} />
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-xl font-black text-black leading-tight italic uppercase tracking-tighter">{user.firstName} {user.lastName}</p>

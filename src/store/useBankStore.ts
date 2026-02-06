@@ -35,6 +35,7 @@ interface User {
         residenceFront: string;
         residenceBack: string;
     };
+    selfie?: string;
 }
 
 interface BankState {

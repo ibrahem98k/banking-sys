@@ -55,6 +55,14 @@ export const AdminEditModal: React.FC<AdminEditModalProps> = ({ isOpen, onClose,
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
+                            {user.selfie && (
+                                <div className="mb-6 rounded-2xl overflow-hidden aspect-video relative group border-2 border-gray-100">
+                                    <img src={user.selfie} alt="User Selfie" className="w-full h-full object-cover type" />
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="text-white font-black uppercase tracking-widest text-xs">Biometric Data</span>
+                                    </div>
+                                </div>
+                            )}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 italic">First Name</label>

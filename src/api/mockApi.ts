@@ -21,6 +21,7 @@ export interface MockUser {
   role: 'user' | 'admin';
   status: 'pending' | 'approved' | 'blocked';
   joinDate: string;
+  selfie?: string; // Base64 or URL
 }
 
 // Mock Data
@@ -31,8 +32,16 @@ const MOCK_ACCOUNTS: Account[] = [
 
 const MOCK_USERS: MockUser[] = [
   { id: '1', firstName: 'John', lastName: 'Doe', phone: '+9647701234567', email: 'john@example.com', role: 'user', status: 'approved', joinDate: '2026-01-15' },
-  { id: '2', firstName: 'Ahmed', lastName: 'Ali', phone: '+9647809876543', email: 'ahmed@example.com', role: 'user', status: 'pending', joinDate: '2026-02-01' },
-  { id: '3', firstName: 'Sara', lastName: 'Omer', phone: '+9647501112233', email: 'sara@example.com', role: 'user', status: 'blocked', joinDate: '2025-12-10' },
+  {
+    id: '2', firstName: 'Ahmed', lastName: 'Ali', phone: '+9647809876543', email: 'ahmed@example.com', role: 'user',
+    status: 'pending',
+    joinDate: '2024-02-15',
+    selfie: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop'
+  },
+  {
+    id: '3',
+    firstName: 'Sarah', lastName: 'Omer', phone: '+9647501112233', email: 'sara@example.com', role: 'user', status: 'blocked', joinDate: '2025-12-10'
+  },
   { id: '4', firstName: 'Admin', lastName: 'Pesse', email: 'admin@pesse.com', role: 'admin', status: 'approved', joinDate: '2025-01-01' },
 ];
 

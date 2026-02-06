@@ -91,7 +91,7 @@ export const Cards: React.FC = () => {
                         </Button>
                     </div>
 
-                    {/* Cards Grid - Restored for better visual impact */}
+                    {/* Cards Grid */}
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-16">
                         {cards.map((card, index) => (
                             <motion.div
@@ -101,17 +101,13 @@ export const Cards: React.FC = () => {
                                 transition={{ delay: index * 0.1 }}
                                 className="group/item"
                             >
-                                {/* Premium Card Unit Container */}
                                 <div className="bg-white border border-gray-100 rounded-[48px] p-10 lg:p-12 shadow-sm hover:shadow-2xl hover:shadow-black/5 transition-all duration-500">
                                     <div className="flex flex-col gap-12">
-
-                                        {/* Card Visual Wrapper - Centered and full impact */}
                                         <div className="relative w-full max-w-[500px] mx-auto xl:mx-0">
                                             <div className="relative z-10">
                                                 <CreditCardVisual card={card} showFullNumber={revealedIds.includes(card.id)} />
                                             </div>
 
-                                            {/* Status Badge - Highest Z-Index to remain visible */}
                                             <div className="absolute -bottom-4 right-8 z-[60]">
                                                 <motion.div
                                                     initial={false}
@@ -128,11 +124,6 @@ export const Cards: React.FC = () => {
                                                 </motion.div>
                                             </div>
 
-                                            {/* Reflection Glow */}
-                                            {!card.frozen && (
-                                                <div className="absolute inset-0 bg-pesse-lime/10 blur-[100px] -z-10 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                                            )}
-
                                             {card.frozen && (
                                                 <div className="absolute inset-0 bg-black/40 backdrop-blur-[6px] rounded-[28px] flex items-center justify-center z-50 pointer-events-none border border-black/10">
                                                     <motion.div
@@ -146,51 +137,35 @@ export const Cards: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Controls and Metadata Area */}
-                                        <div className="flex flex-col md:flex-row gap-12 items-end justify-between">
-                                            <div className="flex-1 space-y-6 w-full">
-                                                <div>
-                                                    <h3 className="text-xl font-black text-black uppercase italic tracking-tighter leading-none mb-2">Protocol Controls.</h3>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Config Node v2.04.42-STABLE</p>
-                                                </div>
-
-                                                <div className="grid grid-cols-4 gap-2">
-                                                    <ControlBtn
-                                                        active={card.frozen}
-                                                        onClick={() => toggleCardFreeze(card.id)}
-                                                        icon={<Lock size={16} />}
-                                                        label={card.frozen ? 'Unfreeze' : 'Freeze'}
-                                                    />
-                                                    <ControlBtn
-                                                        onClick={() => setActiveLimitId(activeLimitId === card.id ? null : card.id)}
-                                                        icon={<Wifi size={16} />}
-                                                        label="Limits"
-                                                    />
-                                                    <ControlBtn
-                                                        onClick={() => toggleReveal(card.id)}
-                                                        icon={revealedIds.includes(card.id) ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                        label={revealedIds.includes(card.id) ? 'Hide Info' : 'Reveal Data'}
-                                                    />
-                                                    <ControlBtn
-                                                        onClick={() => setDeleteCardId(card.id)}
-                                                        icon={<Trash2 size={16} className="text-red-500" />}
-                                                        label="Terminate"
-                                                    />
-                                                </div>
+                                        {/* Controls Area */}
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h3 className="text-xl font-black text-black uppercase italic tracking-tighter leading-none mb-2">Protocol Controls.</h3>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Config Node v2.04.42-STABLE</p>
                                             </div>
 
-                                            <div className="hidden md:flex flex-col items-end gap-2 shrink-0">
-                                                <div className="flex -space-x-2">
-                                                    {[1, 2, 3].map(i => (
-                                                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
-                                                            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-400" />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <button className="flex items-center gap-2 text-[9px] font-black uppercase text-gray-400 hover:text-black transition-colors tracking-widest">
-                                                    <Settings2 size={12} />
-                                                    System Logs
-                                                </button>
+                                            <div className="grid grid-cols-4 gap-3">
+                                                <ControlBtn
+                                                    active={card.frozen}
+                                                    onClick={() => toggleCardFreeze(card.id)}
+                                                    icon={<Lock size={18} />}
+                                                    label={card.frozen ? 'Unfreeze' : 'Freeze'}
+                                                />
+                                                <ControlBtn
+                                                    onClick={() => setActiveLimitId(activeLimitId === card.id ? null : card.id)}
+                                                    icon={<Wifi size={18} />}
+                                                    label="Limits"
+                                                />
+                                                <ControlBtn
+                                                    onClick={() => toggleReveal(card.id)}
+                                                    icon={revealedIds.includes(card.id) ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    label={revealedIds.includes(card.id) ? 'Hide' : 'Reveal'}
+                                                />
+                                                <ControlBtn
+                                                    onClick={() => setDeleteCardId(card.id)}
+                                                    icon={<Trash2 size={18} className="text-red-500" />}
+                                                    label="Delete"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -278,7 +253,7 @@ export const Cards: React.FC = () => {
                                     exit={{ scale: 0.9, opacity: 0 }}
                                     className="bg-white rounded-[32px] p-10 max-w-md w-full shadow-2xl relative overflow-hidden"
                                 >
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-fullblur-3xl"></div>
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl"></div>
 
                                     <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-6 mx-auto">
                                         <AlertTriangle size={28} />
@@ -329,8 +304,8 @@ export const Cards: React.FC = () => {
                         )}
                     </AnimatePresence>
                 </motion.div>
-            </div >
-        </Layout >
+            </div>
+        </Layout>
     );
 };
 
@@ -338,9 +313,19 @@ export const Cards: React.FC = () => {
 const ControlBtn: React.FC<{ active?: boolean, onClick: () => void, icon: React.ReactNode, label: string }> = ({ active, onClick, icon, label }) => (
     <button
         onClick={onClick}
-        className={`w-full flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all group ${active ? 'bg-black border-black text-white' : 'bg-gray-50 border-transparent hover:border-pesse-lime hover:bg-white text-black'}`}
+        className={`w-full flex flex-col items-center justify-center gap-3 p-5 rounded-[24px] border transition-all duration-300 group relative overflow-hidden ${active
+                ? 'bg-black text-white border-black shadow-xl shadow-black/20'
+                : 'bg-white border-gray-100 hover:border-pesse-lime hover:shadow-lg hover:shadow-pesse-lime/10 text-black'
+            }`}
     >
-        <span className={active ? 'text-pesse-lime' : 'text-gray-400 group-hover:text-black'}>{icon}</span>
-        <span className="font-black uppercase italic tracking-tighter text-[10px] whitespace-nowrap">{label}</span>
+        <span className={`transition-transform duration-300 group-hover:scale-110 ${active ? 'text-pesse-lime' : 'text-gray-400 group-hover:text-black'}`}>
+            {icon}
+        </span>
+        <span className="font-black uppercase italic tracking-tighter text-[9px] whitespace-nowrap opacity-80 group-hover:opacity-100">
+            {label}
+        </span>
+        {!active && (
+            <div className="absolute inset-0 bg-pesse-lime/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        )}
     </button>
 );
