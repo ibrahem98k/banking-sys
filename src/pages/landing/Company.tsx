@@ -48,7 +48,7 @@ export const Company: React.FC = () => {
                             Our Mission & Values
                         </motion.div>
 
-                        <h1 className="text-7xl lg:text-[10rem] font-black tracking-tighter mb-10 leading-[0.8] text-black italic">
+                        <h1 className="text-7xl lg:text-[10rem] font-black tracking-tighter mb-4 leading-[0.8] text-black italic">
                             Future of <br />
                             <span className="relative">
                                 Finance.
