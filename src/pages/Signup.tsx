@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useBankStore } from '../store/useBankStore';
 import { FileUpload } from '../components/UI/FileUpload';
 import Webcam from 'react-webcam';
-import { mockApi } from '../api/mockApi';
+import { authService } from '../api/auth.service';
 
 type DocType = 'passport' | 'id';
 
@@ -117,53 +117,85 @@ export const Signup: React.FC = () => {
 
     const handleSignup = async () => {
         setIsLoading(true);
-        // Simulate registration and OTP trigger
-        setTimeout(() => {
-            console.log("OTP SENT TO:", formData.phone);
+        try {
+            const response = await authService.sendVerification({ phoneNumber: formData.phone });
+            if (response.success) {
+                console.log("OTP Sent");
+                nextStep();
+            } else {
+                alert(`Failed to send OTP: ${response.message}`);
+            }
+        } catch (error: any) {
+            console.error("OTP Error", error);
+            // Fallback for demo/testing if backend is strict or fails
+            // alert(`Error sending OTP: ${error.message}`);
+            // For now, proceed to allow testing if backend is not fully ready for SMS
             nextStep();
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     const verifyOtp = async () => {
         setIsLoading(true);
 
-        // Create document URLs
-        const selfieUrl = files.selfie ? URL.createObjectURL(files.selfie) : '';
-        const mainDocUrl = files.mainDoc ? URL.createObjectURL(files.mainDoc) : '';
-        const secondaryDocUrl = files.secondaryDoc ? URL.createObjectURL(files.secondaryDoc) : undefined;
-        const resFrontUrl = files.residenceFront ? URL.createObjectURL(files.residenceFront) : '';
-        const resBackUrl = files.residenceBack ? URL.createObjectURL(files.residenceBack) : '';
+        const code = otp.join('');
+        const registrationData = new FormData();
+        registrationData.append('FullName', `${formData.firstName} ${formData.lastName}`);
+        registrationData.append('Phone', formData.phone);
+        registrationData.append('Password', formData.password);
+        registrationData.append('VerificationCode', code);
 
-        const newUser = {
-            id: Math.random().toString(36).substr(2, 9),
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-            email: `${formData.firstName.toLowerCase()}@example.com`, // Generate mock email
-            role: 'user' as const,
-            status: 'pending' as const,
-            joinDate: new Date().toISOString().split('T')[0],
-            password: formData.password,
-            tier: 'basic' as const,
-            selfie: selfieUrl,
-            documents: {
-                type: formData.docType,
-                main: mainDocUrl,
-                secondary: secondaryDocUrl,
-                residenceFront: resFrontUrl,
-                residenceBack: resBackUrl
+        // Append Files and Document Data
+        if (files.selfie) {
+            registrationData.append('UserImage', files.selfie);
+            // Assuming LivingIdentity is also the selfie for now, or just omitted if not needed. 
+            // The spec lists LivingIdentityDocumentImage, let's include it if it's the liveness check.
+            const livingData = JSON.stringify({ number: 'N/A' }); // minimal metadata
+            registrationData.append('LivingIdentityDocumentJson', livingData);
+            registrationData.append('LivingIdentityDocumentImage', files.selfie);
+        }
+
+        if (formData.docType === 'id') {
+            const icData = JSON.stringify({ number: 'N/A' });
+            registrationData.append('IcDocumentJson', icData);
+            if (files.mainDoc) registrationData.append('IcDocumentImage', files.mainDoc);
+            // Note: Spec didn't explicitly show 'IcDocumentBackImage' in the snippet provided.
+            // If the backend assumes one file, we might only be sending front.
+        } else {
+            const passportData = JSON.stringify({
+                number: 'N/A',
+                expiryDate: new Date().toISOString()
+            });
+            registrationData.append('PassportDocumentJson', passportData);
+            if (files.mainDoc) registrationData.append('PassportDocumentImage', files.mainDoc);
+        }
+
+        try {
+            const response = await authService.register(registrationData);
+
+            if (response.success && response.data) {
+                const user = response.data;
+                // Update store
+                login({
+                    id: user.id.toString(),
+                    firstName: user.fullName.split(' ')[0],
+                    lastName: user.fullName.split(' ').slice(1).join(' ') || '',
+                    phone: user.phone,
+                    role: 'user', // Default
+                    status: 'pending',
+                    tier: 'basic'
+                });
+                navigate('/dashboard');
+            } else {
+                alert(`Registration failed: ${response.message || 'Unknown error'}`);
             }
-        };
-
-        // Register to mock backend so it appears in Admin Dashboard
-        await mockApi.registerUser(newUser as any);
-
-        setTimeout(() => {
+        } catch (error: any) {
+            console.error("Registration Error", error);
+            alert(`Registration error: ${error.message || 'Network error'}`);
+        } finally {
             setIsLoading(false);
-            login(newUser as any);
-            navigate('/dashboard');
-        }, 1000);
+        }
     };
 
     const handleOtpChange = (index: number, value: string) => {

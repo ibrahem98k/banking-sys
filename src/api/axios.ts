@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kzcajtqhoz.a.pinggy.link';
 
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
@@ -106,7 +106,7 @@ apiClient.interceptors.response.use(
         );
 
         const apiResponse = response.data as { success: boolean; data?: { token: string; refreshToken: string; tokenExpiresAt: string; refreshTokenExpiresAt: string } };
-        
+
         if (apiResponse.success && apiResponse.data) {
           localStorage.setItem('accessToken', apiResponse.data.token);
           localStorage.setItem('refreshToken', apiResponse.data.refreshToken);

@@ -9,7 +9,6 @@ import type {
   SetAccountStatusRequest,
   VerifyKycDocumentRequest,
   AdminDashboardMetricsResponse,
-  ApprovalStatus,
   TransactionResponse,
   ReviewTransactionRequest,
   CardResponse,
@@ -17,8 +16,11 @@ import type {
   PayrollJobResponse,
   CreatePayrollJobRequest,
   UpdatePayrollJobRequest,
+  User,
+  TransactionStatus,
+  ApprovalStatus,
+  RiskLevel
 } from '../types/api';
-import { RiskLevel, TransactionStatus } from '../types/api';
 
 export const adminService = {
   // List users by approval status
@@ -30,8 +32,8 @@ export const adminService = {
     const params = new URLSearchParams();
     params.append('pageNumber', pageNumber.toString());
     params.append('pageSize', pageSize.toString());
-    if (approvalStatus) {
-      params.append('approvalStatus', approvalStatus);
+    if (approvalStatus !== undefined) {
+      params.append('approvalStatus', approvalStatus.toString());
     }
     const response = await apiClient.get<ApiResponse<PaginatedListResponse<UserApprovalListItemResponse>>>(
       `/api/admin/users?${params.toString()}`
@@ -143,14 +145,20 @@ export const adminService = {
 
   // Get risk review transactions
   async getRiskReviewTransactions(
-    riskLevel: RiskLevel = RiskLevel.High,
-    status: TransactionStatus = TransactionStatus.Pending,
+    riskLevel?: RiskLevel,
+    status?: TransactionStatus,
     pageNumber: number = 1,
     pageSize: number = 20
   ): Promise<ApiResponse<PaginatedListResponse<TransactionResponse>>> {
     const params = new URLSearchParams();
-    params.append('riskLevel', riskLevel);
-    params.append('status', status);
+    if (riskLevel !== undefined) {
+      params.append('riskLevel', riskLevel.toString());
+    } else {
+      // Default to high risk if not specified? Or let backend handle valid defaults.
+      // Spec usually implies query params are optional.
+    }
+    if (status !== undefined) params.append('status', status.toString());
+
     params.append('pageNumber', pageNumber.toString());
     params.append('pageSize', pageSize.toString());
     const response = await apiClient.get<ApiResponse<PaginatedListResponse<TransactionResponse>>>(
@@ -205,7 +213,7 @@ export const adminService = {
     return response.data;
   },
 
-  // Create payroll job
+  // Create payroll job (Single user per request)
   async createPayrollJob(request: CreatePayrollJobRequest): Promise<ApiResponse<PayrollJobResponse>> {
     const response = await apiClient.post<ApiResponse<PayrollJobResponse>>('/api/admin/payroll', request);
     return response.data;

@@ -5,6 +5,14 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>banking</title>
+    <script>
+      window.addEventListener('error', function(event) {
+        document.body.innerHTML = '<div style="padding: 20px; color: red; font-family: monospace; font-size: 20px; background: #fffbe6; border: 2px solid red;"><h1>Global Error Caught</h1><p>' + event.message + '</p><p>' + event.filename + ':' + event.lineno + '</p></div>';
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        document.body.innerHTML = '<div style="padding: 20px; color: red; font-family: monospace; font-size: 20px; background: #fffbe6; border: 2px solid red;"><h1>Unhandled Promise Rejection</h1><p>' + event.reason + '</p></div>';
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

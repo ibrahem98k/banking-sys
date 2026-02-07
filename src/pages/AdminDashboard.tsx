@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layout } from '../components/Layout/Layout';
-import { mockApi } from '../api/mockApi';
+// import { mockApi } from '../api/mockApi'; // Removed
+import { adminService } from '../api/admin.service';
 import { useBankStore } from '../store/useBankStore';
 import {
     UserCheck,
@@ -29,7 +30,7 @@ import { AdminEditModal } from '../components/Admin/AdminEditModal';
 import { Button } from '../components/UI/Button';
 
 export const AdminDashboard: React.FC = () => {
-    const { allUsers, setUsers, updateUserStatus, deleteUser, updateUser } = useBankStore();
+    const { allUsers, setUsers, updateUserStatus, updateUser } = useBankStore();
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'users' | 'payroll'>('users');
@@ -44,67 +45,147 @@ export const AdminDashboard: React.FC = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    const [totalUsers, setTotalUsers] = useState(0);
+
+    // Stats State
+    const [stats, setStats] = useState({
+        total: 0,
+        pending: 0,
+        active: 0,
+        risk: 0
+    });
+
+    // Validated Stats Fetching
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const [metrics, approved, rejected] = await Promise.all([
+                    adminService.getDashboardMetrics().catch(() => ({ success: false, data: null })),
+                    adminService.listUsers('Approved', 1, 1).catch(() => ({ success: false, data: null })),
+                    adminService.listUsers('Rejected', 1, 1).catch(() => ({ success: false, data: null }))
+                ]);
+
+                setStats({
+                    total: metrics.data?.totalUsers || 0,
+                    pending: metrics.data?.pendingApprovals || 0,
+                    active: approved.data?.totalCount || 0,
+                    risk: rejected.data?.totalCount || 0
+                });
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // Initial Fetch & Search
     useEffect(() => {
         const fetchUsers = async () => {
-            const data = await mockApi.getAllUsers();
-            setUsers(data as any);
-            setLoading(false);
+            setLoading(true);
+            try {
+                const response = await adminService.getUsers(searchTerm, undefined, currentPage, itemsPerPage);
+                if (response.success && response.data) {
+                    const mappedUsers = response.data.items.map(u => ({
+                        id: u.id.toString(),
+                        firstName: u.fullName.split(' ')[0],
+                        lastName: u.fullName.split(' ').slice(1).join(' ') || '',
+                        phone: u.phone,
+                        email: '',
+                        role: u.role === UserRole.Admin ? 'admin' : 'user',
+                        status: u.approvalStatus === 'PendingApproval' ? 'pending' : u.approvalStatus === 'Approved' ? 'approved' : 'blocked',
+                        joinDate: u.createdAt,
+                        selfie: '',
+                        tier: 'basic' // Default tier
+                    }));
+
+                    setUsers(mappedUsers as any);
+                    setTotalUsers(response.data.totalCount);
+                }
+            } catch (err) {
+                console.error("Failed to fetch users", err);
+            } finally {
+                setLoading(false);
+            }
         };
-        fetchUsers();
-    }, [setUsers]);
+
+        const timeoutId = setTimeout(() => {
+            fetchUsers();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, currentPage, setUsers]);
 
     const handleAction = async (userId: string, status: 'approved' | 'blocked') => {
-        await mockApi.updateUserStatus(userId, status);
-        updateUserStatus(userId, status);
+        const apiStatus = status === 'approved' ? 'Approved' : 'Rejected'; // Mapping 'blocked' to 'Rejected'
+        try {
+            await adminService.approveOrRejectUser(Number(userId), { approvalStatus: apiStatus });
+            updateUserStatus(userId, status); // Update local store
+        } catch (err) {
+            alert('Failed to update status');
+            console.error(err);
+        }
     };
 
-    const handleDelete = async (userId: string) => {
+    const handleDelete = async (_userId: string) => {
         if (window.confirm('PROTOCOL WARNING: Are you sure you want to PERMANENTLY delete this node? This action cannot be undone.')) {
-            await mockApi.deleteUser(userId);
-            deleteUser(userId);
+            // await mockApi.deleteUser(userId);
+            // deleteUser(userId);
+            alert("Delete functionality not supported by API yet.");
         }
     };
 
     const handleEditSave = async (userId: string, data: any) => {
-        await mockApi.updateUser(userId, data);
-        updateUser(userId, data);
+        // await mockApi.updateUser(userId, data);
+        // updateUser(userId, data);
+
+        // Check if status changed
+        if (data.status) { // Assuming data.status is 'approved' | 'blocked' | 'pending'
+            const apiStatus = data.status === 'approved' ? 'Approved' : data.status === 'blocked' ? 'Rejected' : 'PendingApproval';
+            try {
+                await adminService.approveOrRejectUser(Number(userId), { approvalStatus: apiStatus });
+                updateUser(userId, { status: data.status });
+            } catch (err) {
+                console.error("Failed to update status", err);
+                alert("Failed to update status on server.");
+            }
+        }
+
+        if (data.firstName || data.lastName || data.email || data.tier) {
+            alert("Note: Editing Name, Email, and Tier is not currently supported by the API. Only Status changes were saved.");
+        }
     };
 
     const handleProcessSalaries = async () => {
         setIsProcessing(true);
-        // Simulate processing
-        await mockApi.processSalaries([1, 2, 3, 4, 5]);
+        // Simulate processing - API integration pending for file upload
+        // await mockApi.processSalaries([1, 2, 3, 4, 5]);
+
+        // Simulating delay for effect
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         setIsProcessing(false);
         setProcessComplete(true);
         setTimeout(() => setProcessComplete(false), 5000);
         setSelectedFile(null);
     };
 
-    const filteredUsers = allUsers.filter(u =>
-        `${u.firstName} ${u.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.phone?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Server-side Pagination Logic
+    // allUsers contains only CURRENT PAGE items now due to server-side fetch
 
-    // Pagination Logic
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    // itemsPerPage and currentPage are used in fetchUsers
+    // indexOfLastItem etc are now irrelevant for slicing, but used for display?
+    // We don't need to slice 'allUsers' anymore because it's already the slice.
+
+    const currentItems = allUsers; // server returns page items
+    const totalPages = Math.ceil(totalUsers / itemsPerPage);
 
     // Reset page when search changes
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm]);
-
-    const stats = {
-        total: allUsers.length,
-        pending: allUsers.filter(u => u.status === 'pending').length,
-        active: allUsers.filter(u => u.status === 'approved').length,
-        risk: allUsers.filter(u => u.status === 'blocked').length,
-    };
 
     return (
         <Layout>

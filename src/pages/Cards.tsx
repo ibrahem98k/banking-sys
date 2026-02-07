@@ -6,7 +6,7 @@ import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2, Trash2, A
 import { Button } from '../components/UI/Button';
 import { useBankStore } from '../store/useBankStore';
 import { accountsService } from '../api/accounts.service';
-import type { CardResponse } from '../types/api';
+import { CardResponse, CardType } from '../types/api';
 
 export const Cards: React.FC = () => {
     const { user } = useBankStore();
@@ -62,7 +62,7 @@ export const Cards: React.FC = () => {
             setDeleteError('Security Protocol: Password Required');
             return;
         }
-        
+
         // Password validation (from teammate's changes)
         if (user?.password && passwordInput !== user.password) {
             setDeleteError('Security Protocol: Invalid Credentials');
@@ -135,17 +135,17 @@ export const Cards: React.FC = () => {
                                             {/* Card Visual Wrapper - Centered and full impact */}
                                             <div className="relative w-full max-w-[500px] mx-auto xl:mx-0">
                                                 <div className="relative z-10">
-                                                    <CreditCardVisual 
+                                                    <CreditCardVisual
                                                         card={{
                                                             id: card.id.toString(),
                                                             number: card.numberMasked,
                                                             holder: user ? `${user.firstName} ${user.lastName}`.toUpperCase() : 'AUTHORIZED HOLDER',
                                                             expiry: new Date(card.expiryDate).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }),
-                                                            type: card.type === 'Debit' ? 'visa' : 'mastercard',
+                                                            type: card.type === CardType.Debit ? 'visa' : 'mastercard',
                                                             frozen: !card.isActive,
                                                             cvv: '***'
-                                                        }} 
-                                                        showFullNumber={revealedIds.includes(card.id)} 
+                                                        }}
+                                                        showFullNumber={revealedIds.includes(card.id)}
                                                     />
                                                 </div>
 
