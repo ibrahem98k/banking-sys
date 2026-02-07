@@ -2,15 +2,10 @@ import {
     AccountStatus,
     ApprovalStatus,
     KycStatus,
-    KybStatus,
     TransactionStatus,
     UserRole,
-    RiskLevel,
     PayrollFrequency,
-    PayrollJobStatus,
     CardType,
-    PaymentStatus,
-    KycDocumentStatus
 } from '../types/api';
 
 // --- Account Status ---
@@ -87,7 +82,6 @@ export const getTransactionStatusLabel = (status: TransactionStatus): string => 
         case TransactionStatus.Completed: return 'Completed';
         case TransactionStatus.Failed: return 'Failed';
         case TransactionStatus.Cancelled: return 'Cancelled';
-        case TransactionStatus.Refunded: return 'Refunded';
         default: return 'Unknown';
     }
 };
@@ -99,7 +93,6 @@ export const getTransactionStatusColor = (status: TransactionStatus): string => 
         case TransactionStatus.Sending: return 'warning';
         case TransactionStatus.Failed:
         case TransactionStatus.Cancelled: return 'destructive';
-        case TransactionStatus.Refunded: return 'default';
         default: return 'secondary';
     }
 };
@@ -109,7 +102,6 @@ export const getCardTypeLabel = (type: CardType): string => {
     switch (type) {
         case CardType.Debit: return 'Debit';
         case CardType.Credit: return 'Credit';
-        case CardType.Virtual: return 'Virtual';
         default: return 'Card';
     }
 };
@@ -121,23 +113,5 @@ export const getPayrollFrequencyLabel = (freq: PayrollFrequency): string => {
         case PayrollFrequency.BiWeekly: return 'Bi-Weekly';
         case PayrollFrequency.Monthly: return 'Monthly';
         default: return 'Custom';
-    }
-};
-
-export const getPayrollJobStatusLabel = (status: PayrollJobStatus): string => {
-    switch (status) {
-        case PayrollJobStatus.Active: return 'Active';
-        case PayrollJobStatus.Paused: return 'Paused';
-        case PayrollJobStatus.Cancelled: return 'Cancelled';
-        default: return 'Unknown';
-    }
-};
-
-export const getPayrollJobStatusColor = (status: PayrollJobStatus): string => {
-    switch (status) {
-        case PayrollJobStatus.Active: return 'success';
-        case PayrollJobStatus.Paused: return 'warning';
-        case PayrollJobStatus.Cancelled: return 'destructive';
-        default: return 'secondary';
     }
 };

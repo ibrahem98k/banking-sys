@@ -46,22 +46,40 @@ export const Dashboard: React.FC = () => {
             setLoading(true);
             setError(null);
             
-            // Fetch dashboard data
-            const dashboardResponse = await dashboardService.getDashboard();
-            if (dashboardResponse.success && dashboardResponse.data) {
-                setDashboardData(dashboardResponse.data);
-            } else {
-                setError(dashboardResponse.message || 'Failed to load dashboard');
-            }
-
-            // Fetch account data
+            // First check if account exists to avoid unnecessary dashboard calls
             const accountResponse = await accountsService.getMyAccount();
             if (accountResponse.success && accountResponse.data) {
                 setAccount(accountResponse.data);
+                
+                // Only fetch dashboard data if account exists
+                const dashboardResponse = await dashboardService.getDashboard();
+                if (dashboardResponse.success && dashboardResponse.data) {
+                    setDashboardData(dashboardResponse.data);
+                } else {
+                    const errorMsg = dashboardResponse.message || 'Failed to load dashboard';
+                    if (!errorMsg.toLowerCase().includes('account not found')) {
+                        setError(errorMsg);
+                    }
+                }
+            } else {
+                // Account not found - this is expected for new users
+                const errorMsg = accountResponse.message || '';
+                if (errorMsg.toLowerCase().includes('account not found')) {
+                    setError('Your account is being set up. Please wait for admin approval.');
+                } else {
+                    setError(errorMsg || 'Account not available');
+                }
             }
         } catch (err: any) {
-            console.error("Failed to fetch dashboard data", err);
-            setError(err.response?.data?.message || 'An error occurred');
+            const errorMsg = err.response?.data?.message || 'An error occurred';
+            // Handle "Account not found" specifically - don't log as error
+            if (errorMsg.toLowerCase().includes('account not found')) {
+                setError('Your account is being set up. Please wait for admin approval.');
+            } else {
+                // Only log unexpected errors
+                console.error("Failed to fetch dashboard data", err);
+                setError(errorMsg);
+            }
         } finally {
             setLoading(false);
         }
@@ -98,9 +116,26 @@ export const Dashboard: React.FC = () => {
                 </motion.div>
 
                 {error && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-                        {error}
-                    </div>
+                    <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-6 rounded-2xl border ${
+                            error.toLowerCase().includes('account is being set up') 
+                                ? 'bg-yellow-50 border-yellow-200 text-yellow-800' 
+                                : 'bg-red-50 border-red-200 text-red-700'
+                        }`}
+                    >
+                        <div className="flex items-start gap-3">
+                            <div className="flex-1">
+                                <p className="font-bold text-sm mb-1">{error}</p>
+                                {error.toLowerCase().includes('account is being set up') && (
+                                    <p className="text-xs opacity-80 mt-2">
+                                        Your registration is complete. An account will be created once your documents are verified and approved by an administrator.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
                 )}
 
                 {/* ROW 1: Balance & Credit Card */}
@@ -152,7 +187,7 @@ export const Dashboard: React.FC = () => {
                         <h3 className="text-lg font-black text-black tracking-tight uppercase italic">Spending Analytics.</h3>
                         <p className="text-xs text-gray-400 font-bold">Historical data visualization across all nodes</p>
                     </div>
-                    <div className="h-[350px] w-full">
+                    <div className="w-full" style={{ height: '350px', minHeight: '350px', position: 'relative' }}>
                         <AnalyticsChart />
                     </div>
                 </motion.div>

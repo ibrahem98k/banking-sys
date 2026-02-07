@@ -13,10 +13,10 @@ const data = [
 
 export const AnalyticsChart: React.FC = () => {
     return (
-        <div className="h-full flex flex-col">
+        <div className="flex flex-col h-full">
             <h3 className="text-xl font-bold mb-6 text-black">Analytics Overview</h3>
-            <div className="flex-1 min-h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full" style={{ height: '250px', minHeight: '250px' }}>
+                <ResponsiveContainer width="100%" height={250}>
                     <AreaChart
                         data={data}
                         margin={{ top: 10, right: 30, left: 0, bottom: 0 }}

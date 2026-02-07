@@ -17,14 +17,24 @@ interface CreditCardProps {
 
 export const CreditCardVisual: React.FC<CreditCardProps> = ({ card, showFullNumber = false }) => {
     const { user, cards } = useBankStore();
-    const displayCard = card || cards[0];
+    const displayCard = card || (cards && cards.length > 0 ? cards[0] : null);
 
-    if (!displayCard) return null;
+    if (!displayCard) {
+        // Return a placeholder card when no card is available
+        return (
+            <div className="w-full aspect-[1.586/1] rounded-[28px] p-7 lg:p-9 relative overflow-hidden shadow-2xl bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <div className="text-center text-gray-400">
+                    <p className="text-sm font-black uppercase italic tracking-tighter mb-2">No Card Available</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest">Contact support to issue a card</p>
+                </div>
+            </div>
+        );
+    }
 
-    const formattedNumber = displayCard.number.replace(/\s/g, '');
-    const groups = showFullNumber
+    const formattedNumber = (displayCard.number || '').replace(/\s/g, '');
+    const groups = showFullNumber && formattedNumber.length >= 16
         ? [formattedNumber.slice(0, 4), formattedNumber.slice(4, 8), formattedNumber.slice(8, 12), formattedNumber.slice(12, 16)]
-        : ['••••', '••••', '••••', formattedNumber.slice(-4)];
+        : ['••••', '••••', '••••', formattedNumber.length >= 4 ? formattedNumber.slice(-4) : '••••'];
 
     return (
         <motion.div

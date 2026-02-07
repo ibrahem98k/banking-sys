@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { AdminEditModal } from '../components/Admin/AdminEditModal';
 import { Button } from '../components/UI/Button';
+import { UserRole } from '../types/api';
 
 export const AdminDashboard: React.FC = () => {
     const { allUsers, setUsers, updateUserStatus, updateUser } = useBankStore();
@@ -88,18 +89,21 @@ export const AdminDashboard: React.FC = () => {
             try {
                 const response = await adminService.getUsers(searchTerm, undefined, currentPage, itemsPerPage);
                 if (response.success && response.data) {
-                    const mappedUsers = response.data.items.map(u => ({
-                        id: u.id.toString(),
-                        firstName: u.fullName.split(' ')[0],
-                        lastName: u.fullName.split(' ').slice(1).join(' ') || '',
-                        phone: u.phone,
-                        email: '',
-                        role: u.role === UserRole.Admin ? 'admin' : 'user',
-                        status: u.approvalStatus === 'PendingApproval' ? 'pending' : u.approvalStatus === 'Approved' ? 'approved' : 'blocked',
-                        joinDate: u.createdAt,
-                        selfie: '',
-                        tier: 'basic' // Default tier
-                    }));
+                    const mappedUsers = response.data.items.map(u => {
+                        const fullNameParts = (u.fullName || '').split(' ');
+                        return {
+                            id: u.id.toString(),
+                            firstName: fullNameParts[0] || u.fullName || '',
+                            lastName: fullNameParts.slice(1).join(' ') || '',
+                            phone: u.phone || '',
+                            email: '',
+                            role: u.role === UserRole.Admin ? 'admin' : 'user',
+                            status: u.approvalStatus === 'PendingApproval' ? 'pending' : u.approvalStatus === 'Approved' ? 'approved' : 'blocked',
+                            joinDate: u.createdAt || '',
+                            selfie: '',
+                            tier: 'basic' // Default tier
+                        };
+                    });
 
                     setUsers(mappedUsers as any);
                     setTotalUsers(response.data.totalCount);

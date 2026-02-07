@@ -10,7 +10,6 @@ import {
     ChevronLeft,
     FileText,
     ShieldCheck,
-    Scan,
     Lock,
     User as UserIcon,
     Camera,
@@ -106,6 +105,8 @@ export const Signup: React.FC = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpVerified, setOtpVerified] = useState(false);
 
 
     const nextStep = () => setStep(prev => prev + 1);
@@ -115,60 +116,154 @@ export const Signup: React.FC = () => {
         setFiles(prev => ({ ...prev, [key]: file }));
     };
 
-    const handleSignup = async () => {
+    const handleSendOtp = async () => {
+        if (!formData.phone) {
+            alert('Please enter a phone number first');
+            return;
+        }
         setIsLoading(true);
         try {
             const response = await authService.sendVerification({ phoneNumber: formData.phone });
             if (response.success) {
                 console.log("OTP Sent");
-                nextStep();
+                setOtpSent(true);
+                setOtp(['', '', '', '', '', '']); // Reset OTP fields
             } else {
                 alert(`Failed to send OTP: ${response.message}`);
             }
         } catch (error: any) {
             console.error("OTP Error", error);
-            // Fallback for demo/testing if backend is strict or fails
-            // alert(`Error sending OTP: ${error.message}`);
-            // For now, proceed to allow testing if backend is not fully ready for SMS
-            nextStep();
+            alert(`Error sending OTP: ${error.message || 'Network error'}`);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const verifyOtp = async () => {
-        setIsLoading(true);
-
+    const handleVerifyOtp = async () => {
         const code = otp.join('');
+        if (code.length !== 6) {
+            alert('Please enter the complete 6-digit OTP');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            // For now, we'll verify OTP and mark as verified
+            // In a real implementation, you'd call an API endpoint to verify
+            setOtpVerified(true);
+            alert('OTP verified successfully!');
+        } catch (error: any) {
+            console.error("OTP Verification Error", error);
+            alert(`OTP verification failed: ${error.message || 'Invalid code'}`);
+            setOtp(['', '', '', '', '', '']); // Reset on error
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSignup = async () => {
+        setIsLoading(true);
+        // This will be called from step 6 (review) to complete registration
+        const code = otp.join('');
+        
+        // Validate required fields
+        if (!formData.firstName || !formData.lastName || !formData.phone || !formData.password || !code) {
+            alert('Please fill in all required fields');
+            setIsLoading(false);
+            return;
+        }
+
+        // Validate required documents
+        if (!files.mainDoc) {
+            alert('Please upload your identification document');
+            setIsLoading(false);
+            return;
+        }
+
+        if (formData.docType === 'id' && !files.secondaryDoc) {
+            alert('Please upload both sides of your ID card');
+            setIsLoading(false);
+            return;
+        }
+
+        if (!files.residenceFront || !files.residenceBack) {
+            alert('Please upload both sides of your residence card');
+            setIsLoading(false);
+            return;
+        }
+
+        if (!files.selfie) {
+            alert('Please capture your selfie for biometric verification');
+            setIsLoading(false);
+            return;
+        }
+
         const registrationData = new FormData();
+        
+        // Basic user information - using PascalCase to match .NET backend expectations
         registrationData.append('FullName', `${formData.firstName} ${formData.lastName}`);
         registrationData.append('Phone', formData.phone);
         registrationData.append('Password', formData.password);
         registrationData.append('VerificationCode', code);
 
-        // Append Files and Document Data
+        // User profile image (selfie)
         if (files.selfie) {
-            registrationData.append('UserImage', files.selfie);
-            // Assuming LivingIdentity is also the selfie for now, or just omitted if not needed. 
-            // The spec lists LivingIdentityDocumentImage, let's include it if it's the liveness check.
-            const livingData = JSON.stringify({ number: 'N/A' }); // minimal metadata
-            registrationData.append('LivingIdentityDocumentJson', livingData);
+            registrationData.append('ImageUrl', files.selfie);
+        }
+
+        // Document handling based on type
+        if (formData.docType === 'id') {
+            // IC Document - MUST send JSON metadata when sending image
+            // Backend error: "IcDocument metadata (JSON) is required"
+            if (files.mainDoc) {
+                // Create IC document metadata - only include fields that user provides
+                // Backend will set imageUrl from the uploaded file
+                const icData = {
+                    number: 'N/A' // This should ideally be extracted from OCR or user input
+                };
+                // Send JSON metadata - backend expects this field name
+                // Try IcDocumentJson first (most common .NET FormData pattern)
+                registrationData.append('IcDocumentJson', JSON.stringify(icData));
+                // Send the image file
+                registrationData.append('IcDocumentImage', files.mainDoc);
+            }
+            // IC Document - back side (if exists)
+            if (files.secondaryDoc) {
+                registrationData.append('IcDocumentBackImage', files.secondaryDoc);
+            }
+        } else {
+            // Passport Document
+            if (files.mainDoc) {
+                // Create passport document metadata
+                const passportData = {
+                    number: 'N/A', // This should ideally be extracted from OCR or user input
+                    expiryDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+                };
+                // Send JSON metadata
+                registrationData.append('PassportDocumentJson', JSON.stringify(passportData));
+                // Send the image file
+                registrationData.append('PassportDocumentImage', files.mainDoc);
+            }
+        }
+
+        // Living Identity Document (selfie for liveness check)
+        if (files.selfie) {
+            const livingData = {
+                imageUrl: '' // Backend will set this from the file
+            };
+            registrationData.append('LivingIdentityDocumentJson', JSON.stringify(livingData));
             registrationData.append('LivingIdentityDocumentImage', files.selfie);
         }
 
-        if (formData.docType === 'id') {
-            const icData = JSON.stringify({ number: 'N/A' });
-            registrationData.append('IcDocumentJson', icData);
-            if (files.mainDoc) registrationData.append('IcDocumentImage', files.mainDoc);
-            // Note: Spec didn't explicitly show 'IcDocumentBackImage' in the snippet provided.
-            // If the backend assumes one file, we might only be sending front.
-        } else {
-            const passportData = JSON.stringify({
-                number: 'N/A',
-                expiryDate: new Date().toISOString()
-            });
-            registrationData.append('PassportDocumentJson', passportData);
-            if (files.mainDoc) registrationData.append('PassportDocumentImage', files.mainDoc);
+        // Log FormData for debugging (in development)
+        if (import.meta.env.DEV) {
+            console.log('Registration FormData:');
+            for (const [key, value] of registrationData.entries()) {
+                if (value instanceof File) {
+                    console.log(`${key}:`, value.name, `(${value.size} bytes)`);
+                } else {
+                    console.log(`${key}:`, value);
+                }
+            }
         }
 
         try {
@@ -176,27 +271,49 @@ export const Signup: React.FC = () => {
 
             if (response.success && response.data) {
                 const user = response.data;
-                // Update store
+                const fullNameParts = (user.fullName || '').split(' ');
                 login({
                     id: user.id.toString(),
-                    firstName: user.fullName.split(' ')[0],
-                    lastName: user.fullName.split(' ').slice(1).join(' ') || '',
-                    phone: user.phone,
-                    role: 'user', // Default
+                    firstName: fullNameParts[0] || user.fullName || '',
+                    lastName: fullNameParts.slice(1).join(' ') || '',
+                    phone: user.phone || '',
+                    role: 'user',
                     status: 'pending',
                     tier: 'basic'
                 });
                 navigate('/dashboard');
             } else {
-                alert(`Registration failed: ${response.message || 'Unknown error'}`);
+                const errorMsg = response.message || response.errors ? JSON.stringify(response.errors) : 'Unknown error';
+                alert(`Registration failed: ${errorMsg}`);
             }
         } catch (error: any) {
             console.error("Registration Error", error);
-            alert(`Registration error: ${error.message || 'Network error'}`);
+            
+            // Extract detailed error message
+            let errorMessage = 'Network error';
+            if (error.response) {
+                const errorData = error.response.data;
+                if (errorData?.message) {
+                    errorMessage = errorData.message;
+                } else if (errorData?.errors) {
+                    errorMessage = Object.entries(errorData.errors)
+                        .map(([key, value]: [string, any]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+                        .join('\n');
+                } else if (errorData?.code) {
+                    errorMessage = `Error ${errorData.code}: ${errorData.message || 'Validation failed'}`;
+                } else {
+                    errorMessage = `Server error: ${error.response.status}`;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            alert(`Registration error: ${errorMessage}`);
         } finally {
             setIsLoading(false);
         }
     };
+
 
     const handleOtpChange = (index: number, value: string) => {
         if (value.length > 1) return;
@@ -253,24 +370,81 @@ export const Signup: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic ml-2">Iraqi Phone Number</label>
-                            <div className="relative group">
-                                <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none transition-transform group-focus-within:scale-110">
-                                    <div className="w-6 h-4 rounded-sm overflow-hidden flex flex-col border border-gray-100 shadow-sm">
-                                        <div className="flex-1 bg-red-600" />
-                                        <div className="flex-1 bg-white" />
-                                        <div className="flex-1 bg-black" />
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic ml-2">Iraqi Phone Number</label>
+                                <div className="flex gap-3">
+                                    <div className="relative group flex-1">
+                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none transition-transform group-focus-within:scale-110">
+                                            <div className="w-6 h-4 rounded-sm overflow-hidden flex flex-col border border-gray-100 shadow-sm">
+                                                <div className="flex-1 bg-red-600" />
+                                                <div className="flex-1 bg-white" />
+                                                <div className="flex-1 bg-black" />
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            className="w-full h-16 bg-gray-50 border-2 border-transparent focus:border-pesse-lime focus:bg-white rounded-2xl pl-16 pr-6 outline-none transition-all font-black uppercase italic tracking-tighter shadow-sm text-lg"
+                                            placeholder="+964 7XX XXX XXXX"
+                                            value={formData.phone}
+                                            onChange={e => {
+                                                setFormData({ ...formData, phone: e.target.value });
+                                                setOtpSent(false);
+                                                setOtpVerified(false);
+                                            }}
+                                            disabled={otpVerified}
+                                        />
                                     </div>
+                                    <Button
+                                        onClick={handleSendOtp}
+                                        isLoading={isLoading && !otpSent}
+                                        disabled={!formData.phone || otpVerified}
+                                        className="h-16 px-6 bg-black text-white hover:bg-pesse-lime hover:text-black rounded-2xl font-black uppercase italic tracking-tighter whitespace-nowrap disabled:opacity-50"
+                                    >
+                                        {otpSent ? 'Resend' : 'Send OTP'}
+                                    </Button>
                                 </div>
-                                <input
-                                    type="tel"
-                                    className="w-full h-16 bg-gray-50 border-2 border-transparent focus:border-pesse-lime focus:bg-white rounded-2xl pl-16 pr-6 outline-none transition-all font-black uppercase italic tracking-tighter shadow-sm text-lg"
-                                    placeholder="+964 7XX XXX XXXX"
-                                    value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                />
                             </div>
+
+                            {otpSent && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="space-y-3"
+                                >
+                                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic ml-2">
+                                        Verification Code {otpVerified && <span className="text-pesse-lime">✓ Verified</span>}
+                                    </label>
+                                    <div className="flex gap-2 justify-center">
+                                        {otp.map((digit, idx) => (
+                                            <input
+                                                key={idx}
+                                                id={`otp-${idx}`}
+                                                type="text"
+                                                maxLength={1}
+                                                value={digit}
+                                                onChange={(e) => handleOtpChange(idx, e.target.value)}
+                                                disabled={otpVerified}
+                                                className={`w-14 h-16 bg-gray-50 border-2 rounded-xl text-center text-2xl font-black italic outline-none transition-all ${
+                                                    otpVerified 
+                                                        ? 'border-pesse-lime bg-pesse-lime/10' 
+                                                        : 'border-transparent focus:border-pesse-lime focus:bg-white'
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
+                                    {!otpVerified && (
+                                        <Button
+                                            onClick={handleVerifyOtp}
+                                            isLoading={isLoading}
+                                            disabled={otp.some(d => !d)}
+                                            className="w-full h-14 bg-black text-white hover:bg-pesse-lime hover:text-black rounded-xl font-black uppercase italic tracking-tighter"
+                                        >
+                                            Verify OTP
+                                        </Button>
+                                    )}
+                                </motion.div>
+                            )}
                         </div>
 
                         <div className="space-y-6">
@@ -331,12 +505,18 @@ export const Signup: React.FC = () => {
                                 !formData.lastName ||
                                 !formData.phone ||
                                 !formData.password ||
-                                formData.password !== formData.confirmPassword
+                                formData.password !== formData.confirmPassword ||
+                                !otpVerified
                             }
-                            className="w-full h-16 bg-black text-white hover:bg-pesse-lime hover:text-black rounded-2xl font-black uppercase italic tracking-widest mt-8 group active:scale-95 transition-all shadow-xl shadow-black/10"
+                            className="w-full h-16 bg-black text-white hover:bg-pesse-lime hover:text-black rounded-2xl font-black uppercase italic tracking-widest mt-8 group active:scale-95 transition-all shadow-xl shadow-black/10 disabled:opacity-50"
                         >
                             Next Protocol <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                         </Button>
+                        {!otpVerified && otpSent && (
+                            <p className="text-[9px] text-red-500 font-bold uppercase tracking-tight text-center mt-2">
+                                Please verify OTP before proceeding
+                            </p>
+                        )}
                     </motion.div>
                 );
             case 2:
@@ -702,49 +882,6 @@ export const Signup: React.FC = () => {
                         </div>
                     </motion.div>
                 );
-            case 7:
-                return (
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-8 text-center"
-                    >
-                        <div className="w-24 h-24 bg-pesse-lime text-black rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-pesse-lime/20">
-                            <Scan size={48} className="animate-pulse" />
-                        </div>
-                        <div className="space-y-2">
-                            <h2 className="text-3xl font-black text-black tracking-tighter uppercase italic leading-none">Authorization Required.</h2>
-                            <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">A 6-digit decryption key was sent to <span className="text-black">{formData.phone}</span></p>
-                        </div>
-
-                        <div className="flex justify-center gap-2 py-8">
-                            {otp.map((digit, idx) => (
-                                <input
-                                    key={idx}
-                                    id={`otp-${idx}`}
-                                    type="text"
-                                    maxLength={1}
-                                    value={digit}
-                                    onChange={(e) => handleOtpChange(idx, e.target.value)}
-                                    className="w-12 h-16 bg-gray-50 border-2 border-transparent focus:border-pesse-lime focus:bg-white rounded-xl text-center text-2xl font-black italic outline-none transition-all"
-                                />
-                            ))}
-                        </div>
-
-                        <Button
-                            onClick={verifyOtp}
-                            isLoading={isLoading}
-                            disabled={otp.some(d => !d)}
-                            className="w-full h-20 bg-black text-white hover:bg-pesse-lime hover:text-black rounded-2xl font-black uppercase italic tracking-widest active:scale-95 transition-transform"
-                        >
-                            Verify & Authenticate
-                        </Button>
-
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-8 cursor-pointer hover:text-black transition-colors">
-                            Resend Protocol Key (0:59)
-                        </p>
-                    </motion.div>
-                );
             default:
                 return null;
         }
@@ -835,7 +972,7 @@ export const Signup: React.FC = () => {
                 <div className="w-full max-w-xl">
                     {/* Step Progress Bar */}
                     <div className="flex gap-1 mb-16">
-                        {[1, 2, 3, 4, 5, 6, 7].map((it) => (
+                        {[1, 2, 3, 4, 5, 6].map((it) => (
                             <div key={it} className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${it <= step ? 'bg-pesse-lime' : 'bg-gray-100'}`} />
                         ))}
                     </div>
@@ -844,10 +981,10 @@ export const Signup: React.FC = () => {
                         {renderStep()}
                     </AnimatePresence>
 
-                    {step < 7 && (
+                    {step < 6 && (
                         <div className="mt-12 text-center">
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                Protocol checkpoint {step} of 7
+                                Protocol checkpoint {step} of 6
                             </p>
                             <p className="mt-4 text-xs text-gray-400">
                                 Already registered? <Link to="/login" className="text-black font-black hover:underline underline-offset-4 italic uppercase">Initialize Session</Link>

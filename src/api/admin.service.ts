@@ -16,7 +16,6 @@ import type {
   PayrollJobResponse,
   CreatePayrollJobRequest,
   UpdatePayrollJobRequest,
-  User,
   TransactionStatus,
   ApprovalStatus,
   RiskLevel

@@ -29,19 +29,21 @@ export const Login: React.FC = () => {
                 if (userResponse.success && userResponse.data) {
                     const user = userResponse.data;
                     // Store user role for route protection
-                    localStorage.setItem('userRole', user.role);
+                    localStorage.setItem('userRole', user.role.toString());
                     
+                    const isAdmin = user.role === 1; // UserRole.Admin
+                    const fullNameParts = (user.fullName || '').split(' ');
                     login({
                         id: user.id.toString(),
-                        firstName: user.fullName.split(' ')[0] || user.fullName,
-                        lastName: user.fullName.split(' ').slice(1).join(' ') || '',
-                        phone: user.phone,
-                        role: user.role.toLowerCase() as 'admin' | 'user',
-                        status: user.approvalStatus.toLowerCase() as 'approved' | 'pending' | 'blocked',
+                        firstName: fullNameParts[0] || user.fullName || '',
+                        lastName: fullNameParts.slice(1).join(' ') || '',
+                        phone: user.phone || '',
+                        role: isAdmin ? 'admin' : 'user',
+                        status: (user.approvalStatus || 'Pending').toLowerCase() as 'approved' | 'pending' | 'blocked',
                         tier: 'basic'
                     });
                     
-                    if (user.role === 'Admin') {
+                    if (isAdmin) {
                         navigate('/admin');
                     } else {
                         navigate('/dashboard');

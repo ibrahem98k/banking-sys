@@ -24,12 +24,12 @@ export const TransferWidget: React.FC<TransferWidgetProps> = ({ accounts, onTran
     const { user, updateBalance } = useBankStore();
     const [step, setStep] = useState<Step>('form');
     const [amount, setAmount] = useState('');
-    const [fromAccountId, setFromAccountId] = useState(accounts[0]?.id || '');
+    const [fromAccountId, setFromAccountId] = useState(accounts && accounts.length > 0 ? accounts[0].id : '');
     const [toAccountNumber, setToAccountNumber] = useState('');
     const [error, setError] = useState<string | null>(null);
     const receiptRef = useRef<HTMLDivElement>(null);
 
-    const fromAccount = accounts.find(a => a.id === fromAccountId);
+    const fromAccount = accounts && accounts.length > 0 ? accounts.find(a => a.id === fromAccountId) : null;
 
     const handleInitialSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,6 +57,12 @@ export const TransferWidget: React.FC<TransferWidgetProps> = ({ accounts, onTran
             const { transactionsService } = await import('../../api/transactions.service');
             const idempotencyKey = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
             
+            if (!fromAccountId || isNaN(parseInt(fromAccountId))) {
+                setError('Please select a valid account');
+                setStep('form');
+                return;
+            }
+
             const response = await transactionsService.createTransfer(
                 {
                     fromAccountId: parseInt(fromAccountId),

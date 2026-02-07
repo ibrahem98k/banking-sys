@@ -370,10 +370,11 @@ export interface UpdatePayrollJobRequest {
 }
 
 // Enums - using string literal unions due to TypeScript config
-export enum UserRole {
-  Admin = 1,
-  Customer = 2,
-}
+export type UserRole = 1 | 2;
+export const UserRole = {
+  Admin: 1 as UserRole,
+  Customer: 2 as UserRole,
+};
 
 export type ApprovalStatus = 'PendingApproval' | 'Approved' | 'Rejected';
 export const ApprovalStatus = {

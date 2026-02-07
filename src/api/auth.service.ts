@@ -27,11 +27,9 @@ export const authService = {
 
   // Register (multipart/form-data)
   async register(formData: FormData): Promise<ApiResponse<RegisterResponse>> {
-    const response = await apiClient.post<ApiResponse<RegisterResponse>>('/auth/register', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // The interceptor will detect FormData and remove the default Content-Type header
+    // Axios will then automatically set Content-Type: multipart/form-data with boundary
+    const response = await apiClient.post<ApiResponse<RegisterResponse>>('/auth/register', formData);
     if (response.data.success && response.data.data) {
       localStorage.setItem('accessToken', response.data.data.token);
       localStorage.setItem('refreshToken', response.data.data.refreshToken);

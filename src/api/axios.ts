@@ -12,13 +12,34 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: false, // Refresh token is sent in body, not cookies
 });
 
-// Request interceptor - attach access token
+// Request interceptor - attach access token and handle FormData
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('accessToken');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // If the data is FormData, remove Content-Type header to let axios set it with boundary
+    if (config.data instanceof FormData) {
+      if (config.headers) {
+        // Remove the default application/json Content-Type
+        // Axios will automatically set multipart/form-data with boundary for FormData
+        if ('Content-Type' in config.headers) {
+          delete config.headers['Content-Type'];
+        }
+        if ('content-type' in config.headers) {
+          delete config.headers['content-type'];
+        }
+      }
+      
+      // Log in development for debugging
+      if (import.meta.env.DEV) {
+        console.log('Sending FormData request to:', config.url);
+        console.log('Headers:', config.headers);
+      }
+    }
+    
     return config;
   },
   (error) => {
@@ -53,8 +74,23 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    // Log errors for debugging
-    if (import.meta.env.DEV) {
+    // Don't log 404 errors for account-related endpoints as errors - they're expected for new users
+    const errorData = error.response?.data as any;
+    const accountRelatedEndpoints = [
+      '/api/accounts/me',
+      '/api/accounts/me/cards',
+      '/api/dashboard',
+      '/api/transactions',
+      '/api/cards'
+    ];
+    
+    const isAccountNotFound = error.response?.status === 404 && 
+      accountRelatedEndpoints.some(endpoint => error.config?.url?.includes(endpoint)) &&
+      (errorData?.message?.toLowerCase()?.includes('account not found') ||
+       errorData?.message?.toLowerCase()?.includes('not approved yet'));
+    
+    // Log errors for debugging (skip expected 404s)
+    if (import.meta.env.DEV && !isAccountNotFound) {
       console.error('API Error:', error.config?.method?.toUpperCase(), error.config?.url, error.response?.status, error.response?.data);
     }
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };

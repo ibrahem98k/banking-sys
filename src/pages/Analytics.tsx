@@ -97,8 +97,8 @@ export const Analytics: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="h-[400px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-[400px] w-full" style={{ minHeight: '400px' }}>
+                            <ResponsiveContainer width="100%" height="100%" minHeight={400}>
                                 <BarChart data={spendingData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 10, fontWeight: 800 }} />
                                     <Tooltip
@@ -119,8 +119,8 @@ export const Analytics: React.FC = () => {
                     {/* Sector Distribution */}
                     <div className="lg:col-span-4 bg-white border border-gray-100 rounded-[48px] p-10 shadow-sm flex flex-col">
                         <h3 className="text-xl font-black text-black tracking-tighter uppercase italic leading-none mb-8">Node Sectors.</h3>
-                        <div className="flex-1 relative mb-8">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="flex-1 relative mb-8" style={{ minHeight: '300px' }}>
+                            <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                                 <PieChart>
                                     <Pie
                                         data={categoryData}
@@ -182,7 +182,7 @@ export const Analytics: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
-                        {useBankStore((state: any) => state.transactions).map((tx: any) => (
+                        {useBankStore((state) => state.transactions).map((tx: any) => (
                             <motion.div
                                 key={tx.id}
                                 whileHover={{ x: 10 }}

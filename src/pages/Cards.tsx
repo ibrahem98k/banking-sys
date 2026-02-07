@@ -6,7 +6,8 @@ import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2, Trash2, A
 import { Button } from '../components/UI/Button';
 import { useBankStore } from '../store/useBankStore';
 import { accountsService } from '../api/accounts.service';
-import { CardResponse, CardType } from '../types/api';
+import { CardType } from '../types/api';
+import type { CardResponse } from '../types/api';
 
 export const Cards: React.FC = () => {
     const { user } = useBankStore();
@@ -24,12 +25,24 @@ export const Cards: React.FC = () => {
         const fetchCards = async () => {
             try {
                 setLoadingCards(true);
+                // First check if account exists
+                const accountCheck = await accountsService.getMyAccount();
+                if (!accountCheck.success || accountCheck.message?.toLowerCase().includes('account not found')) {
+                    // Account not found - expected for new users
+                    setCards([]);
+                    setLoadingCards(false);
+                    return;
+                }
+                
                 const response = await accountsService.getMyCards();
                 if (response.success && response.data) {
                     setCards(response.data);
                 }
-            } catch (error) {
-                console.error('Failed to fetch cards', error);
+            } catch (error: any) {
+                // Don't log expected 404 errors
+                if (!error.response?.data?.message?.toLowerCase().includes('account not found')) {
+                    console.error('Failed to fetch cards', error);
+                }
             } finally {
                 setLoadingCards(false);
             }
@@ -140,7 +153,7 @@ export const Cards: React.FC = () => {
                                                             id: card.id.toString(),
                                                             number: card.numberMasked,
                                                             holder: user ? `${user.firstName} ${user.lastName}`.toUpperCase() : 'AUTHORIZED HOLDER',
-                                                            expiry: new Date(card.expiryDate).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }),
+                                                            expiry: card.expiryDate ? new Date(card.expiryDate).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }) : 'N/A',
                                                             type: card.type === CardType.Debit ? 'visa' : 'mastercard',
                                                             frozen: !card.isActive,
                                                             cvv: '***'
