@@ -1,58 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCardVisual } from '../components/Dashboard/CreditCard';
-import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Lock, Wifi, Eye, EyeOff, Loader2, X, Shield, Settings2, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/UI/Button';
 import { useBankStore } from '../store/useBankStore';
+import { accountsService } from '../api/accounts.service';
+import type { CardResponse } from '../types/api';
 
 export const Cards: React.FC = () => {
-    const { cards, user, addCard, toggleCardFreeze, deleteCard } = useBankStore();
+    const { user } = useBankStore();
+    const [cards, setCards] = useState<CardResponse[]>([]);
     const [isAdding, setIsAdding] = useState(false);
-    const [deleteCardId, setDeleteCardId] = useState<string | null>(null);
+    const [deleteCardId, setDeleteCardId] = useState<number | null>(null);
     const [passwordInput, setPasswordInput] = useState('');
     const [deleteError, setDeleteError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [revealedIds, setRevealedIds] = useState<string[]>([]);
-    const [activeLimitId, setActiveLimitId] = useState<string | null>(null);
+    const [loadingCards, setLoadingCards] = useState(true);
+    const [revealedIds, setRevealedIds] = useState<number[]>([]);
+    const [activeLimitId, setActiveLimitId] = useState<number | null>(null);
 
-    const generateCardNumber = () => {
-        let res = '';
-        for (let i = 0; i < 4; i++) {
-            res += Math.floor(1000 + Math.random() * 9000).toString() + (i < 3 ? ' ' : '');
-        }
-        return res;
-    };
+    useEffect(() => {
+        const fetchCards = async () => {
+            try {
+                setLoadingCards(true);
+                const response = await accountsService.getMyCards();
+                if (response.success && response.data) {
+                    setCards(response.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch cards', error);
+            } finally {
+                setLoadingCards(false);
+            }
+        };
+        fetchCards();
+    }, []);
 
-    const handleOrderNewCard = () => {
+    const handleOrderNewCard = async () => {
         setLoading(true);
-        setTimeout(() => {
-            const newCard = {
-                id: 'c' + (cards.length + 1),
-                number: generateCardNumber(),
-                holder: user ? `${user.firstName} ${user.lastName}`.toUpperCase() : 'AUTHORIZED HOLDER',
-                expiry: '12/30',
-                type: cards.length % 2 === 0 ? 'mastercard' : 'visa' as any,
-                frozen: false,
-                cvv: Math.floor(100 + Math.random() * 900).toString()
-            };
-            addCard(newCard);
-            setLoading(false);
+        try {
+            // Note: Card issuance requires admin role, so this would typically show an error
+            // For now, we'll show a message that card issuance requires admin approval
+            alert('Card issuance requires admin approval. Please contact support.');
             setIsAdding(false);
-        }, 2000);
+        } catch (error) {
+            console.error('Failed to order card', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const toggleReveal = (id: string) => {
+    const toggleReveal = (id: number) => {
         setRevealedIds(prev =>
             prev.includes(id) ? prev.filter(mid => mid !== id) : [...prev, id]
         );
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (!passwordInput) {
             setDeleteError('Security Protocol: Password Required');
             return;
         }
+        
+        // Password validation (from teammate's changes)
         if (user?.password && passwordInput !== user.password) {
             setDeleteError('Security Protocol: Invalid Credentials');
             return;
@@ -64,8 +75,9 @@ export const Cards: React.FC = () => {
             return;
         }
 
+        // Note: Card revocation requires admin role - show message after validation
         if (deleteCardId) {
-            deleteCard(deleteCardId);
+            alert('Card revocation requires admin approval. Please contact support.');
             setDeleteCardId(null);
             setPasswordInput('');
             setDeleteError('');
@@ -96,88 +108,135 @@ export const Cards: React.FC = () => {
                         </Button>
                     </div>
 
-                    {/* Cards Grid */}
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-16">
-                        {cards.map((card, index) => (
-                            <motion.div
-                                key={card.id}
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="group/item"
-                            >
-                                <div className="bg-white border border-gray-100 rounded-[48px] p-10 lg:p-12 shadow-sm hover:shadow-2xl hover:shadow-black/5 transition-all duration-500">
-                                    <div className="flex flex-col gap-12">
-                                        <div className="relative w-full max-w-[500px] mx-auto xl:mx-0">
-                                            <div className="relative z-10">
-                                                <CreditCardVisual card={card} showFullNumber={revealedIds.includes(card.id)} />
-                                            </div>
+                    {/* Cards Grid - Combined: API integration + UI improvements */}
+                    {loadingCards ? (
+                        <div className="text-center py-16">
+                            <Loader2 className="animate-spin text-pesse-lime mx-auto" size={48} />
+                        </div>
+                    ) : cards.length === 0 ? (
+                        <div className="text-center py-16 text-gray-400">
+                            <p className="text-lg font-bold">No cards found</p>
+                            <p className="text-sm mt-2">Contact support to issue a new card</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-16">
+                            {cards.map((card, index) => (
+                                <motion.div
+                                    key={card.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className="group/item"
+                                >
+                                    {/* Premium Card Unit Container */}
+                                    <div className="bg-white border border-gray-100 rounded-[48px] p-10 lg:p-12 shadow-sm hover:shadow-2xl hover:shadow-black/5 transition-all duration-500">
+                                        <div className="flex flex-col gap-12">
 
-                                            <div className="absolute -bottom-4 right-8 z-[60]">
-                                                <motion.div
-                                                    initial={false}
-                                                    animate={{
-                                                        backgroundColor: card.frozen ? '#000000' : '#ffffff',
-                                                        color: card.frozen ? '#ffffff' : '#000000'
-                                                    }}
-                                                    className={`px-6 py-2.5 rounded-full border shadow-2xl flex items-center gap-3 backdrop-blur-md ${card.frozen ? 'border-white/20' : 'border-gray-100'}`}
-                                                >
-                                                    <div className={`w-2 h-2 rounded-full ${card.frozen ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-pesse-lime animate-pulse shadow-[0_0_10px_rgba(190,246,0,0.8)]'}`} />
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                                                        {card.frozen ? 'Node Encrypted' : 'Asset Live'}
-                                                    </span>
-                                                </motion.div>
-                                            </div>
+                                            {/* Card Visual Wrapper - Centered and full impact */}
+                                            <div className="relative w-full max-w-[500px] mx-auto xl:mx-0">
+                                                <div className="relative z-10">
+                                                    <CreditCardVisual 
+                                                        card={{
+                                                            id: card.id.toString(),
+                                                            number: card.numberMasked,
+                                                            holder: user ? `${user.firstName} ${user.lastName}`.toUpperCase() : 'AUTHORIZED HOLDER',
+                                                            expiry: new Date(card.expiryDate).toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' }),
+                                                            type: card.type === 'Debit' ? 'visa' : 'mastercard',
+                                                            frozen: !card.isActive,
+                                                            cvv: '***'
+                                                        }} 
+                                                        showFullNumber={revealedIds.includes(card.id)} 
+                                                    />
+                                                </div>
 
-                                            {card.frozen && (
-                                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[6px] rounded-[28px] flex items-center justify-center z-50 pointer-events-none border border-black/10">
+                                                {/* Status Badge - Highest Z-Index to remain visible */}
+                                                <div className="absolute -bottom-4 right-8 z-[60]">
                                                     <motion.div
-                                                        initial={{ scale: 0.5, opacity: 0 }}
-                                                        animate={{ scale: 1, opacity: 1 }}
-                                                        className="bg-white/10 p-5 rounded-full backdrop-blur-sm border border-white/20"
+                                                        initial={false}
+                                                        animate={{
+                                                            backgroundColor: !card.isActive ? '#000000' : '#ffffff',
+                                                            color: !card.isActive ? '#ffffff' : '#000000'
+                                                        }}
+                                                        className={`px-6 py-2.5 rounded-full border shadow-2xl flex items-center gap-3 backdrop-blur-md ${!card.isActive ? 'border-white/20' : 'border-gray-100'}`}
                                                     >
-                                                        <Lock size={32} className="text-white" />
+                                                        <div className={`w-2 h-2 rounded-full ${!card.isActive ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-pesse-lime animate-pulse shadow-[0_0_10px_rgba(190,246,0,0.8)]'}`} />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                                                            {!card.isActive ? 'Node Encrypted' : 'Asset Live'}
+                                                        </span>
                                                     </motion.div>
                                                 </div>
-                                            )}
-                                        </div>
 
-                                        {/* Controls Area */}
-                                        <div className="space-y-6">
-                                            <div>
-                                                <h3 className="text-xl font-black text-black uppercase italic tracking-tighter leading-none mb-2">Protocol Controls.</h3>
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Config Node v2.04.42-STABLE</p>
+                                                {/* Reflection Glow */}
+                                                {card.isActive && (
+                                                    <div className="absolute inset-0 bg-pesse-lime/10 blur-[100px] -z-10 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                                )}
+
+                                                {!card.isActive && (
+                                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[6px] rounded-[28px] flex items-center justify-center z-50 pointer-events-none border border-black/10">
+                                                        <motion.div
+                                                            initial={{ scale: 0.5, opacity: 0 }}
+                                                            animate={{ scale: 1, opacity: 1 }}
+                                                            className="bg-white/10 p-5 rounded-full backdrop-blur-sm border border-white/20"
+                                                        >
+                                                            <Lock size={32} className="text-white" />
+                                                        </motion.div>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <div className="grid grid-cols-4 gap-3">
-                                                <ControlBtn
-                                                    active={card.frozen}
-                                                    onClick={() => toggleCardFreeze(card.id)}
-                                                    icon={<Lock size={18} />}
-                                                    label={card.frozen ? 'Unfreeze' : 'Freeze'}
-                                                />
-                                                <ControlBtn
-                                                    onClick={() => setActiveLimitId(activeLimitId === card.id ? null : card.id)}
-                                                    icon={<Wifi size={18} />}
-                                                    label="Limits"
-                                                />
-                                                <ControlBtn
-                                                    onClick={() => toggleReveal(card.id)}
-                                                    icon={revealedIds.includes(card.id) ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                    label={revealedIds.includes(card.id) ? 'Hide' : 'Reveal'}
-                                                />
-                                                <ControlBtn
-                                                    onClick={() => setDeleteCardId(card.id)}
-                                                    icon={<Trash2 size={18} className="text-red-500" />}
-                                                    label="Delete"
-                                                />
+                                            {/* Controls and Metadata Area */}
+                                            <div className="flex flex-col md:flex-row gap-12 items-end justify-between">
+                                                <div className="flex-1 space-y-6 w-full">
+                                                    <div>
+                                                        <h3 className="text-xl font-black text-black uppercase italic tracking-tighter leading-none mb-2">Protocol Controls.</h3>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Config Node v2.04.42-STABLE</p>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-4 gap-2">
+                                                        <ControlBtn
+                                                            active={!card.isActive}
+                                                            onClick={() => alert('Card freeze/unfreeze requires admin approval')}
+                                                            icon={<Lock size={16} />}
+                                                            label={!card.isActive ? 'Unfreeze' : 'Freeze'}
+                                                        />
+                                                        <ControlBtn
+                                                            onClick={() => setActiveLimitId(activeLimitId === card.id ? null : card.id)}
+                                                            icon={<Wifi size={16} />}
+                                                            label="Limits"
+                                                        />
+                                                        <ControlBtn
+                                                            onClick={() => toggleReveal(card.id)}
+                                                            icon={revealedIds.includes(card.id) ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                            label={revealedIds.includes(card.id) ? 'Hide Info' : 'Reveal Data'}
+                                                        />
+                                                        <ControlBtn
+                                                            onClick={() => setDeleteCardId(card.id)}
+                                                            icon={<Trash2 size={16} className="text-red-500" />}
+                                                            label="Terminate"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="hidden md:flex flex-col items-end gap-2 shrink-0">
+                                                    <div className="flex -space-x-2">
+                                                        {[1, 2, 3].map(i => (
+                                                            <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
+                                                                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-400" />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button className="flex items-center gap-2 text-[9px] font-black uppercase text-gray-400 hover:text-black transition-colors tracking-widest">
+                                                        <Settings2 size={12} />
+                                                        System Logs
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Ordering Modal */}
                     <AnimatePresence>

@@ -7,9 +7,11 @@ import { AnalyticsChart } from '../components/Dashboard/AnalyticsChart';
 import { ActivityList } from '../components/Dashboard/ActivityList';
 import { TransferWidget } from '../components/Dashboard/TransferWidget';
 import { UserInfoWidget } from '../components/Dashboard/UserInfoWidget';
-import { mockApi, type Account } from '../api/mockApi';
 import { Loader2 } from 'lucide-react';
 import { useBankStore } from '../store/useBankStore';
+import { dashboardService } from '../api/dashboard.service';
+import { accountsService } from '../api/accounts.service';
+import type { DashboardResponse, AccountResponse } from '../types/api';
 
 // Animation variants for staggered children
 const containerVariants: Variants = {
@@ -33,16 +35,33 @@ const itemVariants: Variants = {
 };
 
 export const Dashboard: React.FC = () => {
-    const [accounts, setAccounts] = useState<Account[]>([]);
+    const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
+    const [account, setAccount] = useState<AccountResponse | null>(null);
     const [loading, setLoading] = useState(true);
-    const { user, balance } = useBankStore();
+    const [error, setError] = useState<string | null>(null);
+    const { user } = useBankStore();
 
     const fetchData = async () => {
         try {
-            const data = await mockApi.getAccounts();
-            setAccounts(data);
-        } catch (error) {
-            console.error("Failed to fetch accounts", error);
+            setLoading(true);
+            setError(null);
+            
+            // Fetch dashboard data
+            const dashboardResponse = await dashboardService.getDashboard();
+            if (dashboardResponse.success && dashboardResponse.data) {
+                setDashboardData(dashboardResponse.data);
+            } else {
+                setError(dashboardResponse.message || 'Failed to load dashboard');
+            }
+
+            // Fetch account data
+            const accountResponse = await accountsService.getMyAccount();
+            if (accountResponse.success && accountResponse.data) {
+                setAccount(accountResponse.data);
+            }
+        } catch (err: any) {
+            console.error("Failed to fetch dashboard data", err);
+            setError(err.response?.data?.message || 'An error occurred');
         } finally {
             setLoading(false);
         }
@@ -78,11 +97,17 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </motion.div>
 
+                {error && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                        {error}
+                    </div>
+                )}
+
                 {/* ROW 1: Balance & Credit Card */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <motion.div variants={itemVariants} className="lg:col-span-7">
                         <div className="h-full bg-white border border-gray-100 rounded-[32px] p-2 shadow-sm">
-                            <BalanceHero totalBalance={balance} />
+                            <BalanceHero totalBalance={dashboardData?.totalBalance || account?.balance || 0} />
                         </div>
                     </motion.div>
 
@@ -102,7 +127,15 @@ export const Dashboard: React.FC = () => {
                     </motion.div>
 
                     <motion.div variants={itemVariants}>
-                        <TransferWidget accounts={accounts} onTransferSuccess={fetchData} />
+                        <TransferWidget 
+                            accounts={account ? [{
+                                id: account.id.toString(),
+                                type: account.accountType as 'Checking' | 'Savings',
+                                accountNumber: account.accountNumber,
+                                balance: account.balance
+                            }] : []} 
+                            onTransferSuccess={fetchData} 
+                        />
                     </motion.div>
 
                     <motion.div variants={itemVariants}>

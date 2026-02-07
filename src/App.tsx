@@ -12,17 +12,18 @@ import { Business } from './pages/landing/Business';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/cards" element={<Cards />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/cards" element={<ProtectedRoute><Cards /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
 
         {/* Landing Pages */}
         <Route path="/features" element={<Features />} />

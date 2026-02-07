@@ -4,6 +4,7 @@ import { Button } from '../components/UI/Button';
 import { ArrowLeft, ShieldCheck, Cpu, Zap, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useBankStore } from '../store/useBankStore';
+import { authService } from '../api/auth.service';
 
 export const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -11,31 +12,51 @@ export const Login: React.FC = () => {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const login = useBankStore((state) => state.login);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError(null);
 
-        // Mock login delay
-        setTimeout(() => {
-            setIsLoading(false);
-            const isAdmin = phone === '07500000000'; // Admin Phone Mock
-            login({
-                id: isAdmin ? '4' : '1',
-                firstName: isAdmin ? 'Admin' : 'John',
-                lastName: isAdmin ? 'Pesse' : 'Doe',
-                phone: phone,
-                role: isAdmin ? 'admin' : 'user',
-                status: 'approved',
-                tier: isAdmin ? 'elite' : 'basic'
-            });
-            if (isAdmin) {
-                navigate('/admin');
+        try {
+            const response = await authService.login({ phone, password });
+            
+            if (response.success && response.data) {
+                // Get user info
+                const userResponse = await authService.me();
+                if (userResponse.success && userResponse.data) {
+                    const user = userResponse.data;
+                    // Store user role for route protection
+                    localStorage.setItem('userRole', user.role);
+                    
+                    login({
+                        id: user.id.toString(),
+                        firstName: user.fullName.split(' ')[0] || user.fullName,
+                        lastName: user.fullName.split(' ').slice(1).join(' ') || '',
+                        phone: user.phone,
+                        role: user.role.toLowerCase() as 'admin' | 'user',
+                        status: user.approvalStatus.toLowerCase() as 'approved' | 'pending' | 'blocked',
+                        tier: 'basic'
+                    });
+                    
+                    if (user.role === 'Admin') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/dashboard');
+                    }
+                } else {
+                    setError(userResponse.message || 'Failed to get user information');
+                }
             } else {
-                navigate('/dashboard');
+                setError(response.message || 'Login failed');
             }
-        }, 1500);
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'An error occurred during login');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -196,6 +217,11 @@ export const Login: React.FC = () => {
                         <p className="text-gray-500 mb-10">Enter your credentials to access your account.</p>
 
                         <form onSubmit={handleLogin} className="flex flex-col gap-6">
+                            {error && (
+                                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                                    {error}
+                                </div>
+                            )}
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-semibold text-gray-700">Phone Number</label>
                                 <input

@@ -24,7 +24,6 @@ import {
     Camera
 } from 'lucide-react';
 import { AdminEditModal } from '../components/Admin/AdminEditModal';
-import { AdminUserReviewModal } from '../components/Admin/AdminUserReviewModal';
 import { Button } from '../components/UI/Button';
 
 export const AdminDashboard: React.FC = () => {
@@ -41,7 +40,6 @@ export const AdminDashboard: React.FC = () => {
 
     // Edit modal states
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
 
     useEffect(() => {
@@ -187,7 +185,7 @@ export const AdminDashboard: React.FC = () => {
                                                     <tr
                                                         key={user.id}
                                                         className="hover:bg-pesse-light/30 transition-all group cursor-pointer"
-                                                        onClick={() => { setSelectedUser(user); setIsReviewModalOpen(true); }}
+                                                        onClick={() => { setSelectedUser(user); setIsEditModalOpen(true); }}
                                                     >
                                                         <td className="px-12 py-8">
                                                             <div className="flex items-center gap-6">

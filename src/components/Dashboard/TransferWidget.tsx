@@ -1,11 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { type Account } from '../../api/mockApi';
 import { Button } from '../UI/Button';
 import { CheckCircle2, X, Download, ShieldCheck, Loader2, ArrowRight } from 'lucide-react';
 import { useBankStore } from '../../store/useBankStore';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+
+interface Account {
+    id: string;
+    type: 'Checking' | 'Savings';
+    accountNumber: string;
+    balance: number;
+}
 
 interface TransferWidgetProps {
     accounts: Account[];
@@ -45,17 +51,32 @@ export const TransferWidget: React.FC<TransferWidgetProps> = ({ accounts, onTran
 
     const confirmTransfer = async () => {
         setStep('processing');
-
-        // Simulate "Looking for/Checking" phase
-        await new Promise(r => setTimeout(r, 2000));
+        setError(null);
 
         try {
-            // Mock success
-            updateBalance(-parseFloat(amount));
-            setStep('success');
-            onTransferSuccess();
-        } catch (err) {
-            setError("Transfer failed. Please try again.");
+            const { transactionsService } = await import('../../api/transactions.service');
+            const idempotencyKey = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+            
+            const response = await transactionsService.createTransfer(
+                {
+                    fromAccountId: parseInt(fromAccountId),
+                    toAccountNumber: toAccountNumber,
+                    amount: parseFloat(amount),
+                    purpose: 'Transfer',
+                },
+                idempotencyKey
+            );
+
+            if (response.success) {
+                updateBalance(-parseFloat(amount));
+                setStep('success');
+                onTransferSuccess();
+            } else {
+                setError(response.message || 'Transfer failed. Please try again.');
+                setStep('form');
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Transfer failed. Please try again.');
             setStep('form');
         }
     };
