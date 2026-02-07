@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '../components/UI/Button';
 import { LandingLayout } from '../components/Layout/LandingLayout';
+import HeroImage from '../assets/hero-image.jpg';
 
 export const Landing: React.FC = () => {
     const navigate = useNavigate();
@@ -53,7 +54,7 @@ export const Landing: React.FC = () => {
                         style={{ borderTopLeftRadius: '200px', borderTopRightRadius: '200px' }}
                     >
                         <img
-                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000&auto=format&fit=crop"
+                            src={HeroImage}
                             alt="User"
                             className="w-full h-full object-cover mix-blend-multiply opacity-90"
                         />

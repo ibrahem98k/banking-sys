@@ -777,13 +777,7 @@ export const Signup: React.FC = () => {
                     </Link>
 
                     <div className="space-y-8">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="inline-block px-4 py-1.5 rounded-full bg-pesse-lime text-black font-black text-[10px] uppercase tracking-widest"
-                        >
-                            Protocol V7.0
-                        </motion.div>
+
                         <GreetingText />
                     </div>
                 </div>

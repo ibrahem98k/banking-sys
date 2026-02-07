@@ -21,7 +21,9 @@ import {
     ShieldAlert,
     Database,
     Loader2,
-    Camera
+    Camera,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { AdminEditModal } from '../components/Admin/AdminEditModal';
 import { Button } from '../components/UI/Button';
@@ -83,6 +85,19 @@ export const AdminDashboard: React.FC = () => {
         u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.phone?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Pagination Logic
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+    // Reset page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     const stats = {
         total: allUsers.length,
@@ -179,9 +194,9 @@ export const AdminDashboard: React.FC = () => {
                                             <tbody className="divide-y divide-gray-50">
                                                 {loading ? (
                                                     <tr><td colSpan={4} className="px-12 py-32 text-center font-black text-gray-200 uppercase tracking-[0.5em]">Initializing Data Stream...</td></tr>
-                                                ) : filteredUsers.length === 0 ? (
+                                                ) : currentItems.length === 0 ? (
                                                     <tr><td colSpan={4} className="px-12 py-32 text-center font-black text-gray-200 uppercase tracking-[0.5em]">No Nodes Detected</td></tr>
-                                                ) : filteredUsers.map((user) => (
+                                                ) : currentItems.map((user) => (
                                                     <tr
                                                         key={user.id}
                                                         className="hover:bg-pesse-light/30 transition-all group cursor-pointer"
@@ -261,6 +276,31 @@ export const AdminDashboard: React.FC = () => {
                                         </table>
                                     </div>
                                 </div>
+
+                                {/* Pagination Controls */}
+                                {totalPages > 1 && (
+                                    <div className="flex justify-between items-center px-4">
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            className="bg-white text-black border border-gray-100 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-4 rounded-2xl font-black uppercase italic tracking-widest flex items-center gap-2"
+                                        >
+                                            <ChevronLeft size={16} /> Previous
+                                        </Button>
+
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            className="bg-white text-black border border-gray-100 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-4 rounded-2xl font-black uppercase italic tracking-widest flex items-center gap-2"
+                                        >
+                                            Next <ChevronRight size={16} />
+                                        </Button>
+                                    </div>
+                                )}
                             </motion.div>
                         ) : (
                             <motion.div
